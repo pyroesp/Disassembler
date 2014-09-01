@@ -1,3 +1,13 @@
+/**
+ *  Disassembler
+ *      by pyroesp, aka Nicolas Lopez Fernandez
+ *
+ *  Date: 1/09/2014
+ *
+ *  License:
+ *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+**/
+
 #include "../include/disasm.h"
 
 int main(int argc, char *argv[])
