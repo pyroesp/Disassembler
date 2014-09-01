@@ -16,6 +16,13 @@ The resource.h file contains some info about the cpu, like the size of opcode an
 
 In the future I'll add an intel hex format parser, which will "decode" the file by checking the extension of the program to be disassembled.
 
+--------
+
+How to use:
+
+In cmd type - Disassembler.exe instruction_set.csv program.hex
+
+--------
 
 Log:
 ====
