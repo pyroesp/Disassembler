@@ -12,6 +12,9 @@ The idea behind Disassembler is to make a universal disassembler, for whatever p
 
 The program will work using a config file. It will contain all instruction set of the CPU for which the program has been compiled. It will contain an instruction mask, arg counter, arg mask, and finaly the instruction in ASM, where $ is used as a placeholder for the arg in the opcode.
 
+The resource.h file contains some info about the cpu, like size of opcode.
+
+In the future I'll add an intel hex format parser, which will "decode" the file by checking the extension of the program to be disassembled.
 
 
 Log:
