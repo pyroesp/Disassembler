@@ -24,8 +24,6 @@
 
 #define DISARM_ARG_HEX 1 // write arg in hex if 1, dec if 0
 
-#define DISASM_CONFIG_EXT ".csv"
-
 
 /* Structures */
 typedef struct{
@@ -65,9 +63,9 @@ typedef struct{
 
 /* Functions */
 void disasm_Init(DISASM *pDisasm);
-uint8_t disasm_ReadProgram(DISASM *pDisasm, char *programPath, char *extension);
+uint8_t disasm_ReadProgram(DISASM *pDisasm, char *programPath);
+uint8_t disasm_ReadConfig(DISASM *pDisasm, char *configPath);
 uint8_t disasm_ProgramToOpcode(DISASM *pDisasm);
-uint8_t disasm_ReadConfig(DISASM *pDisasm, char *configPath, char *extension);
 void disasm_ParseConfig(DISASM *pDisasm);
 void disasm_Free(DISASM *pDisasm);
 

@@ -40,18 +40,9 @@ void disasm_Init(DISASM *pDisasm)
     pDisasm->outputASM = NULL;
 }
 
-uint8_t disasm_ReadProgram(DISASM *pDisasm, char *programPath, char *extension)
+uint8_t disasm_ReadProgram(DISASM *pDisasm, char *programPath)
 {
     FILE *file;
-
-    if (strcmp(extension, programPath + strlen(programPath) - strlen(extension)) != 0)
-    {
-        printf("File type is not ch8.\n");
-        printf("Exiting...\n");
-
-        return 1;
-    }
-
     file = fopen(programPath, "rb");
 
     if (file == NULL)
@@ -70,6 +61,32 @@ uint8_t disasm_ReadProgram(DISASM *pDisasm, char *programPath, char *extension)
 
     fread(pDisasm->program, sizeof(char), pDisasm->programSize, file);
     pDisasm->program[pDisasm->programSize] = 0;
+
+    fclose(file);
+    return 0;
+}
+
+uint8_t disasm_ReadConfig(DISASM *pDisasm, char *configPath)
+{
+    FILE *file;
+    file = fopen(configPath, "rb");
+
+    if (file == NULL)
+    {
+        printf("Couldn't open file.\n");
+        return 1;
+    }
+
+    fseek(file, 0, SEEK_END);
+    pDisasm->configSize = ftell(file);
+    rewind(file);
+
+    pDisasm->config = (char*)malloc(pDisasm->configSize * sizeof(char) + 1);
+    if (pDisasm->config == NULL)
+        return 1;
+
+    fread(pDisasm->config, sizeof(char), pDisasm->configSize, file);
+    pDisasm->config[pDisasm->configSize] = 0;
 
     fclose(file);
     return 0;
@@ -98,41 +115,6 @@ uint8_t disasm_ProgramToOpcode(DISASM *pDisasm)
         }
     }
 
-    return 0;
-}
-
-uint8_t disasm_ReadConfig(DISASM *pDisasm, char *configPath, char *extension)
-{
-    FILE *file;
-
-    if (strcmp(extension, configPath + strlen(configPath) - strlen(extension)) != 0)
-    {
-        printf("File type is not ch8.\n");
-        printf("Exiting...\n");
-
-        return 1;
-    }
-
-    file = fopen(configPath, "rb");
-
-    if (file == NULL)
-    {
-        printf("Couldn't open file.\n");
-        return 1;
-    }
-
-    fseek(file, 0, SEEK_END);
-    pDisasm->configSize = ftell(file);
-    rewind(file);
-
-    pDisasm->config = (char*)malloc(pDisasm->configSize * sizeof(char) + 1);
-    if (pDisasm->config == NULL)
-        return 1;
-
-    fread(pDisasm->config, sizeof(char), pDisasm->configSize, file);
-    pDisasm->config[pDisasm->configSize] = 0;
-
-    fclose(file);
     return 0;
 }
 

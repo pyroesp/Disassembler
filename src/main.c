@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
 {
     DISASM code;
     disasm_Init(&code);
-    if (disasm_ReadConfig(&code, argv[1], DISASM_CONFIG_EXT))
+    if (disasm_ReadConfig(&code, argv[1]))
         return 1;
-    if (disasm_ReadProgram(&code, argv[2], RES_PROGRAM_EXT))
+    if (disasm_ReadProgram(&code, argv[2]))
         return 1;
 
     if (disasm_ProgramToOpcode(&code))
