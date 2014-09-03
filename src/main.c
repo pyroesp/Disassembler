@@ -14,6 +14,7 @@
 
 int main(int argc, char *argv[])
 {
+    uint32_t i;
     DISASM code;
     disasm_Init(&code);
     if (config_ReadFile(&code, argv[1]))
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
     if (program_ToHex(&code))
         return 1;
 
-
+    config_ParseOpcodeList(&code);
 
     free(code.config);
     free(code.program);

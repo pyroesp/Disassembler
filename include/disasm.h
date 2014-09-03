@@ -19,15 +19,7 @@
 #include "resource.h"
 
 /* Defines */
-#define DISASM_CSV_CHAR ';' // separator char
-#define DISASM_VAR_CHAR '$' // variable char
-
 #define DISASM_ARG_HEX 1 // write arg in hex if 1, dec if 0
-
-#define DISASM_OPTYPE_NONBRANCH 0
-#define DISASM_OPTYPE_JUMP 1
-#define DISASM_OPTYPE_CALL 2
-#define DISASM_OPTYPE_RET 3
 
 
 /* Structures */

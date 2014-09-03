@@ -17,7 +17,7 @@ uint8_t program_ReadFile(DISASM *pDisasm, char *programPath)
 
     if (file == NULL)
     {
-        printf("Couldn't open file.\n");
+        printf("Couldn't open file: %s\n", programPath);
         return 1;
     }
 
