@@ -9,17 +9,19 @@
 **/
 
 #include "../include/disasm.h"
+#include "../include/config.h"
+#include "../include/program.h"
 
 int main(int argc, char *argv[])
 {
     DISASM code;
     disasm_Init(&code);
-    if (disasm_ReadConfig(&code, argv[1]))
+    if (config_ReadFile(&code, argv[1]))
         return 1;
-    if (disasm_ReadProgram(&code, argv[2]))
+    if (program_ReadFile(&code, argv[2]))
         return 1;
 
-    if (disasm_ProgramToOpcode(&code))
+    if (program_ToHex(&code))
         return 1;
 
 

@@ -72,11 +72,4 @@ void disasm_Init(DISASM *pDisasm);
 void disasm_Free(DISASM *pDisasm);
 
 
-uint8_t disasm_ReadProgram(DISASM *pDisasm, char *programPath);
-uint8_t disasm_ReadConfig(DISASM *pDisasm, char *configPath);
-uint8_t disasm_ProgramToOpcode(DISASM *pDisasm);
-void disasm_GetJumpList(DISASM *pDisasm);
-void disasm_ParseConfig(DISASM *pDisasm);
-
-
 #endif // DISASM_H_INCLUDED
