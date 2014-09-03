@@ -21,15 +21,3 @@ In the future I'll add an intel hex format parser, which will "decode" the file 
 How to use:
 
 In cmd type - Disassembler.exe instruction_set.csv program.hex
-
---------
-
-Log:
-====
-
-2/09/2014
-- Added files to repo
-- current config file is for CHIP-8 cpu
-
-1/09/2014
-- Disassembler project started
