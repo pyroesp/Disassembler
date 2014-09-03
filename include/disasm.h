@@ -22,18 +22,24 @@
 #define DISASM_CSV_CHAR ';' // separator char
 #define DISASM_VAR_CHAR '$' // variable char
 
-#define DISARM_ARG_HEX 1 // write arg in hex if 1, dec if 0
+#define DISASM_ARG_HEX 1 // write arg in hex if 1, dec if 0
+
+#define DISASM_OPTYPE_NONBRANCH 0
+#define DISASM_OPTYPE_JUMP 1
+#define DISASM_OPTYPE_CALL 2
+#define DISASM_OPTYPE_RET 3
 
 
 /* Structures */
 typedef struct{
-    uint16_t opcodeHex; // opcode hex value from config
-    uint16_t opcodeMask; // opcode hex mask from config
-    uint16_t argc; // number of argument in opcode
-    uint16_t *argMask; // argument mask
+    uint32_t hexVal; // opcode hex value from config
+    uint32_t type; // type of opcode, either jump or call or non-jump
+    uint32_t hexMask; // opcode hex mask from config
+    uint32_t argc; // number of argument in opcode
+    uint32_t *argMask; // argument mask
 
-    char *opcodeHexConfig; // hex opcode string from config file
-    char *opcodeASMConfig; // string of asm instruction
+    char *hexConfig; // hex opcode string from config file
+    char *mnemonic; // string of asm instruction
 }OPCODE;
 
 typedef struct{
@@ -63,11 +69,14 @@ typedef struct{
 
 /* Functions */
 void disasm_Init(DISASM *pDisasm);
+void disasm_Free(DISASM *pDisasm);
+
+
 uint8_t disasm_ReadProgram(DISASM *pDisasm, char *programPath);
 uint8_t disasm_ReadConfig(DISASM *pDisasm, char *configPath);
 uint8_t disasm_ProgramToOpcode(DISASM *pDisasm);
+void disasm_GetJumpList(DISASM *pDisasm);
 void disasm_ParseConfig(DISASM *pDisasm);
-void disasm_Free(DISASM *pDisasm);
 
 
 #endif // DISASM_H_INCLUDED

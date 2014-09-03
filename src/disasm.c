@@ -134,10 +134,9 @@ void disasm_Free(DISASM *pDisasm)
     for (i = 0; i < pDisasm->totalOpcode; i++)
     {
         free(pDisasm->opcodeList[i].argMask);
-        free(pDisasm->opcodeList[i].opcodeASMConfig);
-        free(pDisasm->opcodeList[i].opcodeHexConfig);
+        free(pDisasm->opcodeList[i].mnemonic);
+        free(pDisasm->opcodeList[i].hexConfig);
     }
-
     free(pDisasm->opcodeList);
 
     free(pDisasm->jumpList.address);
