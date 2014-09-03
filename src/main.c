@@ -8,9 +8,9 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-#include "../include/disasm.h"
-#include "../include/config.h"
-#include "../include/program.h"
+#include "disasm.h"
+#include "config.h"
+#include "program.h"
 
 int main(int argc, char *argv[])
 {

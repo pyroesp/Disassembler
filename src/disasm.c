@@ -8,7 +8,7 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-#include "../include/disasm.h"
+#include "disasm.h"
 
 void disasm_Init(DISASM *pDisasm)
 {
