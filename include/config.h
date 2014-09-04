@@ -37,6 +37,7 @@ void config_ParseOpcodeList(DISASM *pDisasm);
 void config_OpcodeListSize(DISASM *pDisasm);
 char* config_GetValue(DISASM *pDisasm, uint32_t *pIdx);
 uint32_t config_GetLength(DISASM *pDisasm, uint32_t *pIdx);
+uint32_t config_OpcodeStr2Hex(char *pHexConfig);
 
 
 #endif // CONFIG_H_INCLUDED

@@ -55,10 +55,11 @@ void config_ParseOpcodeList(DISASM *pDisasm)
         {
             case CONFIG_CSVPOS_INSTR:
                 pDisasm->opcodeList[instr].hexConfig = buff;
+                pDisasm->opcodeList[instr].hexVal = config_OpcodeStr2Hex(buff);
                 csvPos = CONFIG_CSVPOS_INSTR_MASK;
                 break;
             case CONFIG_CSVPOS_INSTR_MASK:
-                sscanf(buff, "0x%04X", &pDisasm->opcodeList[instr].hexMask);
+                sscanf(buff, "0x%X", &pDisasm->opcodeList[instr].hexMask);
                 csvPos = CONFIG_CSVPOS_INSTR_TYPE;
                 break;
             case CONFIG_CSVPOS_INSTR_TYPE:
@@ -84,7 +85,7 @@ void config_ParseOpcodeList(DISASM *pDisasm)
                 }
                 break;
             case CONFIG_CSVPOS_ARG_MASK:
-                sscanf(buff, "0x%04X", &pDisasm->opcodeList[instr].argMask[arg]);
+                sscanf(buff, "0x%X", &pDisasm->opcodeList[instr].argMask[arg]);
                 arg++;
                 if (arg >= pDisasm->opcodeList[instr].argc)
                 {
@@ -155,4 +156,19 @@ uint32_t config_GetLength(DISASM *pDisasm, uint32_t *pIdx)
     return i;
 }
 
+uint32_t config_OpcodeStr2Hex(char *pHexConfig)
+{
+    uint32_t i;
+    char *buff;
+    buff = (char*)malloc(strlen(pHexConfig));
+    strcpy(buff, pHexConfig);
 
+    for (i = strlen(pHexConfig) - 1; i > 0 && buff[i] != 'x'; i--)
+    {
+        if ((buff[i] < '0' || buff[i] > '9') && (buff[i] < 'A' || buff[i] > 'F'))
+            buff[i] = '0';
+    }
+
+    sscanf(buff, "0x%X", &i);
+    return i;
+}
