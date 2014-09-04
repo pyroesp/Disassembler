@@ -40,6 +40,23 @@ void disasm_Init(DISASM *pDisasm)
     pDisasm->outputASM = NULL;
 }
 
+void disasm_GenerateOutput(DISASM *pDisasm)
+{
+    uint32_t i, j;
+    pDisasm->output = (char*)malloc(sizeof(char)); // just to have a valid pointer
+
+    for (i = 0; i < pDisasm->hexCodeSize; i++)
+    {
+        for (j = 0; j < pDisasm->totalOpcode; j++)
+        {
+            if (((pDisasm->hexCode[i] & pDisasm->opcodeList[j].hexMask) ^ pDisasm->opcodeList[j].hexVal) == 0)
+            {
+                // TODO: pDisasm->output = mnemonic string with vars if needed
+            }
+        }
+    }
+}
+
 void disasm_Free(DISASM *pDisasm)
 {
     uint32_t i;
@@ -63,6 +80,3 @@ void disasm_Free(DISASM *pDisasm)
 
     free(pDisasm->outputASM);
 }
-
-
-

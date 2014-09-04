@@ -13,6 +13,11 @@
 
 #include "disasm.h"
 
+#define PROGRAM_INSTR_TYPE_NONBRANCH 0
+#define PROGRAM_INSTR_TYPE_JUMP 1
+#define PROGRAM_INSTR_TYPE_CALL 2
+#define PROGRAM_INSTR_TYPE_RET 3
+
 uint8_t program_ReadFile(DISASM *pDisasm, char *programPath);
 uint8_t program_ToHex(DISASM *pDisasm);
 void program_GetJumpList(DISASM *pDisasm);

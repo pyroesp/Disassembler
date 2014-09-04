@@ -41,9 +41,12 @@ uint8_t program_ToHex(DISASM *pDisasm)
     uint32_t sizeHexCode;
     uint32_t i, j;
     sizeHexCode = pDisasm->programSize / RES_OPCODE_SIZE;
+    pDisasm->hexCodeSize = sizeHexCode;
+
     pDisasm->hexCode = (uint32_t*)malloc(sizeHexCode * sizeof(uint32_t));
     if (pDisasm->hexCode == NULL)
         return 1;
+
     pDisasm->hexAddress = (uint32_t*)malloc(sizeHexCode * sizeof(uint32_t));
     if (pDisasm->hexAddress == NULL)
         return 1;
@@ -60,14 +63,4 @@ uint8_t program_ToHex(DISASM *pDisasm)
     }
 
     return 0;
-}
-
-void program_GetJumpList(DISASM *pDisasm)
-{
-
-}
-
-void program_GetCallList(DISASM *pDisasm)
-{
-
 }

@@ -37,7 +37,7 @@ typedef struct{
 typedef struct{
     uint32_t total; // total jumps
     uint32_t *address; // address of jump
-    uint32_t *name; // name of jump
+    uint32_t **name; // name of jump
 }JMP;
 
 typedef JMP CALL; // CALL = JMP struct
@@ -46,17 +46,19 @@ typedef struct{
     uint32_t totalOpcode; // total hexCode in config file
     OPCODE *opcodeList; // opcode list
 
-    char *program; // program to disassemble
-    uint32_t *hexCode; // rearange program to have hexCode
-    uint32_t *hexAddress; // address of hexCode
-    uint32_t programSize; // program size in bytes
     char *config; // config file
     uint32_t configSize;
+    char *program; // program to disassemble
+    uint32_t programSize; // program size in bytes
+    uint32_t *hexCode; // rearange program to have hexCode
+    uint32_t *hexAddress; // address of hexCode
+    uint32_t hexCodeSize;
 
     JMP jumpList; // list of jumps
     CALL callList; // list of calls
 
-    char *outputASM; // output string to save in file
+    char *output; // output string to save in file
+    uint32_t outputSize;
 }DISASM;
 
 /* Functions */
