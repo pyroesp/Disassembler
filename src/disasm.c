@@ -38,12 +38,13 @@ void disasm_Init(DISASM *pDisasm)
 
     // output code
     pDisasm->outputASM = NULL;
+    pDisasm->outputSize = 0;
 }
 
 void disasm_GenerateOutput(DISASM *pDisasm)
 {
     uint32_t i, j;
-    pDisasm->output = (char*)malloc(sizeof(char)); // just to have a valid pointer
+    pDisasm->outputASM = (char*)malloc(sizeof(char)); // just to have a valid pointer
 
     for (i = 0; i < pDisasm->hexCodeSize; i++)
     {
@@ -73,10 +74,10 @@ void disasm_Free(DISASM *pDisasm)
     }
     free(pDisasm->opcodeList);
 
-    free(pDisasm->jumpList.address);
-    free(pDisasm->jumpList.name);
-    free(pDisasm->callList.address);
-    free(pDisasm->callList.name);
-
-    free(pDisasm->outputASM);
+//    free(pDisasm->jumpList.address);
+//    free(pDisasm->jumpList.name);
+//    free(pDisasm->callList.address);
+//    free(pDisasm->callList.name);
+//
+//    free(pDisasm->outputASM);
 }

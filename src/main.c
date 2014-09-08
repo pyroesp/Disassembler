@@ -27,11 +27,9 @@ int main(int argc, char *argv[])
 
     config_ParseOpcodeList(&code);
 
-    free(code.config);
-    free(code.program);
-    free(code.hexAddress);
-    free(code.hexCode);
+    for(i = 0; i < code.totalOpcode; i++)
+        printf("opcode %d: 0x%04X\n", i, code.opcodeList[i].hexVal);
 
-    //disasm_Free(&code);
+    disasm_Free(&code);
     return 0;
 }

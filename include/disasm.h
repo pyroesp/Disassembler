@@ -37,7 +37,7 @@ typedef struct{
 typedef struct{
     uint32_t total; // total jumps
     uint32_t *address; // address of jump
-    uint32_t **name; // name of jump
+    char **name; // name of jump
 }JMP;
 
 typedef JMP CALL; // CALL = JMP struct
@@ -57,12 +57,13 @@ typedef struct{
     JMP jumpList; // list of jumps
     CALL callList; // list of calls
 
-    char *output; // output string to save in file
+    char *outputASM; // output string to save in file
     uint32_t outputSize;
 }DISASM;
 
 /* Functions */
 void disasm_Init(DISASM *pDisasm);
+void disasm_GenerateOutput(DISASM *pDisasm);
 void disasm_Free(DISASM *pDisasm);
 
 

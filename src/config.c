@@ -111,10 +111,12 @@ void config_OpcodeListSize(DISASM *pDisasm)
 
     for (i = 0; i < pDisasm->configSize; i++)
     {
+        // check if line starts with 0x
         if (pDisasm->config[i] == '0' && pDisasm->config[i + 1] == 'x' && isOpcode == 0)
             isOpcode = 1;
 
-        if (pDisasm ->config[i] == '\n' && isOpcode)
+        // wait end of line
+        if ((pDisasm->config[i] == '\n' || pDisasm->config[i] == 0) && isOpcode)
         {
             pDisasm->totalOpcode++;
             isOpcode = 0;
@@ -147,10 +149,10 @@ uint32_t config_GetLength(DISASM *pDisasm, uint32_t *pIdx)
 {
     uint32_t i;
 
-    for(i = 0;  pDisasm->config[*pIdx + i] != CONFIG_CSV_CHAR && \
-                pDisasm->config[*pIdx + i] != '\n' && \
-                pDisasm->config[*pIdx + i] != '\r' && \
-                pDisasm->config[*pIdx + i] != 0 \
+    for(i = 0;  pDisasm->config[*pIdx + i] != CONFIG_CSV_CHAR &&    \
+                pDisasm->config[*pIdx + i] != '\n' &&               \
+                pDisasm->config[*pIdx + i] != '\r' &&               \
+                pDisasm->config[*pIdx + i] != 0                     \
                 ; i++);
 
     return i;

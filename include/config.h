@@ -25,12 +25,6 @@
 
 #define CONFIG_MAX_INSTR_ARG 3
 
-#define CONFIG_MAX_INSTR_TYPE 4
-#define CONFIG_INSTR_TYPE_NONBRANCH 0
-#define CONFIG_INSTR_TYPE_JUMP 1
-#define CONFIG_INSTR_TYPE_CALL 2
-#define CONFIG_INSTR_TYPE_RET 3
-
 
 uint8_t config_ReadFile(DISASM *pDisasm, char *configPath);
 void config_ParseOpcodeList(DISASM *pDisasm);
