@@ -19,7 +19,11 @@
 #include "resource.h"
 
 /* Defines */
-#define DISASM_ARG_HEX 1 // write arg in hex if 1, dec if 0
+#define DISASM_ARG_HEX 0 // write arg in hex
+#define DISASM_ARG_DEC 1 // write arg in dec
+
+#define DISASM_ADD_ADDR 0x01 // 1 = add, 0 = don't add
+#define DISASM_ADD_OPCODE 0x02 // 1 = add, 0 = don't add
 
 
 /* Structures */
@@ -35,12 +39,13 @@ typedef struct{
 }OPCODE;
 
 typedef struct{
-    uint32_t total; // total jumps
-    uint32_t *address; // address of jump
-    char **name; // name of jump
-}JMP;
+    uint32_t total;
+    uint32_t *address;
+    char **name;
+}List;
 
-typedef JMP CALL; // CALL = JMP struct
+typedef List CALL; // CALL = List struct
+typedef List JMP; // JMP = List struct
 
 typedef struct{
     uint32_t totalOpcode; // total hexCode in config file
@@ -57,13 +62,17 @@ typedef struct{
     JMP jumpList; // list of jumps
     CALL callList; // list of calls
 
-    char *outputASM; // output string to save in file
-    uint32_t outputSize;
+    char **outputASM; // output string to save in file
 }DISASM;
 
 /* Functions */
 void disasm_Init(DISASM *pDisasm);
-void disasm_GenerateOutput(DISASM *pDisasm);
+void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag);
+uint32_t disasm_GetArg(uint32_t hexCode, uint32_t argMask);
+void disasm_ArgToString(char *argStr, uint32_t argVal, uint32_t argBase);
+void disasm_AddOrigin(char **pOutput, uint32_t hexAddr);
+void disasm_AddString(char **pOutput, char *string2Add);
+void disasm_StringReplace(char *inputString, char character, char *replaceString);
 void disasm_Free(DISASM *pDisasm);
 
 

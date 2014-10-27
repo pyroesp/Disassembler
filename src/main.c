@@ -14,7 +14,6 @@
 
 int main(int argc, char *argv[])
 {
-    uint32_t i;
     DISASM code;
     disasm_Init(&code);
     if (config_ReadFile(&code, argv[1]))
@@ -26,9 +25,12 @@ int main(int argc, char *argv[])
         return 1;
 
     config_ParseOpcodeList(&code);
+    program_GetList(&code, &code.jumpList, PROGRAM_INSTR_TYPE_JUMP_ABS, "label_%03d", PROGRAM_LBL_LEN); // jump
+    program_GetList(&code, &code.callList, PROGRAM_INSTR_TYPE_CALL, "function_%03d", PROGRAM_FUNC_LEN); // call
 
-    for(i = 0; i < code.totalOpcode; i++)
-        printf("opcode %d: 0x%04X\n", i, code.opcodeList[i].hexVal);
+    disasm_GenerateOutput(&code, DISASM_ARG_DEC, DISASM_ADD_ADDR | DISASM_ADD_OPCODE);
+
+    printf("%s", code.outputASM[0]);
 
     disasm_Free(&code);
     return 0;

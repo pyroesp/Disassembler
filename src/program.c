@@ -78,66 +78,51 @@ uint32_t program_GetOpcodeIndex(uint32_t hexCode, uint32_t opcodeListSize, OPCOD
     return (uint32_t)-1;
 }
 
-void program_GetJumpList(DISASM *pDisasm)
+void program_GetList(DISASM *pDisasm, List *pList, uint32_t instrType, const char *name, uint32_t nameLen)
 {
     uint32_t i, idx;
 
     for (i = 0; i < pDisasm->hexCodeSize; i++)
     {
         idx = program_GetOpcodeIndex(pDisasm->hexCode[i], pDisasm->totalOpcode, pDisasm->opcodeList);
-        if (idx >= 0 && idx < pDisasm->totalOpcode)
+        if (idx >= 0 && idx < pDisasm->totalOpcode) // if valid index
         {
-            if (pDisasm->opcodeList[idx].type == PROGRAM_INSTR_TYPE_JUMP_ABS)
+            if (pDisasm->opcodeList[idx].type == instrType) // if instruction is jump or call type
             {
-                pDisasm->jumpList.total++;
-                if (pDisasm->jumpList.total == 1)
+                if (!program_CheckAddressList(pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0], pList)) // if jump address is not known
                 {
-                    pDisasm->jumpList.address = (uint32_t*)malloc(sizeof(uint32_t) * pDisasm->jumpList.total);
-                    pDisasm->jumpList.name = (char**)malloc(sizeof(char*) * pDisasm->jumpList.total);
-                    pDisasm->jumpList.name[pDisasm->jumpList.total - 1] = (char*)malloc(sizeof(char) * PROGRAM_LBL_LEN);
-                }
-                else
-                {
-                    pDisasm->jumpList.address = (uint32_t*)realloc(pDisasm->jumpList.address, sizeof(uint32_t) * pDisasm->jumpList.total);
-                    pDisasm->jumpList.name = (char**)realloc(pDisasm->jumpList.name, sizeof(char*) * pDisasm->jumpList.total);
-                    pDisasm->jumpList.name[pDisasm->jumpList.total - 1] = (char*)malloc(sizeof(char) * PROGRAM_LBL_LEN);
-                }
+                    // add address to list
+                    pList->total++;
+                    if (pList->total == 1)
+                    {
+                        pList->address = (uint32_t*)malloc(sizeof(uint32_t) * pList->total);
+                        pList->name = (char**)malloc(sizeof(char*) * pList->total);
+                        pList->name[pList->total - 1] = (char*)malloc(sizeof(char) * PROGRAM_LBL_LEN);
+                    }
+                    else
+                    {
+                        pList->address = (uint32_t*)realloc(pList->address, sizeof(uint32_t) * pList->total);
+                        pList->name = (char**)realloc(pList->name, sizeof(char*) * pList->total);
+                        pList->name[pList->total - 1] = (char*)malloc(sizeof(char) * nameLen);
+                    }
 
-                pDisasm->jumpList.address[pDisasm->jumpList.total - 1] = pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0];
-                sprintf(pDisasm->jumpList.name[pDisasm->jumpList.total - 1], "label_%03d:", pDisasm->jumpList.total);
+                    pList->address[pList->total - 1] = pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0];
+                    sprintf(pList->name[pList->total - 1], name, pList->total);
+                }
             }
         }
     }
 }
 
-void program_GetCallList(DISASM *pDisasm)
+uint32_t program_CheckAddressList(uint32_t hexAddress, List *pList)
 {
-    uint32_t i, idx;
+    uint32_t i;
 
-    for (i = 0; i < pDisasm->hexCodeSize; i++)
+    for (i = 0; i < pList->total; i++)
     {
-        idx = program_GetOpcodeIndex(pDisasm->hexCode[i], pDisasm->totalOpcode, pDisasm->opcodeList);
-        if (idx >= 0 && idx < pDisasm->totalOpcode)
-        {
-            if (pDisasm->opcodeList[idx].type == PROGRAM_INSTR_TYPE_CALL)
-            {
-                pDisasm->callList.total++;
-                if (pDisasm->callList.total == 1)
-                {
-                    pDisasm->callList.address = (uint32_t*)malloc(sizeof(uint32_t) * pDisasm->callList.total);
-                    pDisasm->callList.name = (char**)malloc(sizeof(char*) * pDisasm->callList.total);
-                    pDisasm->callList.name[pDisasm->callList.total - 1] = (char*)malloc(sizeof(char) * PROGRAM_LBL_LEN);
-                }
-                else
-                {
-                    pDisasm->callList.address = (uint32_t*)realloc(pDisasm->callList.address, sizeof(uint32_t) * pDisasm->callList.total);
-                    pDisasm->callList.name = (char**)realloc(pDisasm->callList.name, sizeof(char*) * pDisasm->callList.total);
-                    pDisasm->callList.name[pDisasm->callList.total - 1] = (char*)malloc(sizeof(char) * PROGRAM_LBL_LEN);
-                }
-
-                pDisasm->callList.address[pDisasm->callList.total - 1] = pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0];
-                sprintf(pDisasm->callList.name[pDisasm->callList.total - 1], "function_%03d:", pDisasm->callList.total);
-            }
-        }
+        if (pList->address[i] == hexAddress)
+            return i;
     }
+
+    return (uint32_t)-1; // return -1 if not in list
 }

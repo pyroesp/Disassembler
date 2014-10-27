@@ -24,7 +24,8 @@
 uint8_t program_ReadFile(DISASM *pDisasm, char *programPath);
 uint8_t program_ToHex(DISASM *pDisasm);
 uint32_t program_GetOpcodeIndex(uint32_t hexCode, uint32_t opcodeListSize, OPCODE *pOpcodeList);
-void program_GetJumpList(DISASM *pDisasm);
-void program_GetCallList(DISASM *pDisasm);
+void program_GetList(DISASM *pDisasm, List *pList, uint32_t instrType, const char *name, uint32_t nameLen);
+uint32_t program_CheckAddressList(uint32_t hexAddress, List *pList);
+
 
 #endif // PROGRAM_H_INCLUDED
