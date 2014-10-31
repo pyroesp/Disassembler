@@ -109,7 +109,7 @@ void config_ParseOpcodeList(DISASM *pDisasm)
         }
 
         // Increase variable i to skip certain chars
-        if (pDisasm->config[i] == ';')
+        if (pDisasm->config[i] == CONFIG_CSV_CHAR)
             i++;
         else if (pDisasm->config[i] == '\n')
             i++;
@@ -176,9 +176,10 @@ uint32_t config_OpcodeStr2Hex(char *pHexConfig)
     uint32_t i;
     char *buff;
     // Allocate memory to make a copy of the string opcode
-    buff = (char*)malloc(strlen(pHexConfig));
+    buff = (char*)malloc(sizeof(char) * (strlen(pHexConfig) + 1));
     // Copy opcode string to buff
     strcpy(buff, pHexConfig);
+    buff[strlen(pHexConfig)] = 0;
 
     // Replace all chars that are not part of hexadecimal value
     for (i = strlen(pHexConfig) - 1; i > 0 && buff[i] != 'x'; i--)

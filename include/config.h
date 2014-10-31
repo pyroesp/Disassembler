@@ -13,7 +13,7 @@
 
 #include "disasm.h"
 
-#define CONFIG_CSV_CHAR ';' // Separator char
+#define CONFIG_CSV_CHAR '\t' // Separator char
 #define CONFIG_VAR_CHAR '$' // Variable char
 
 #define CONFIG_CSVPOS_INSTR 0 // Instruction position in CSV
