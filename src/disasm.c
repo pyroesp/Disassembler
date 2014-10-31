@@ -59,6 +59,14 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
     {
         sprintf(org, "0x%X: ", RES_PROGRAM_BASE_ADDRESS);
         disasm_AddString(pDisasm->outputASM, org);
+        if (flag & DISASM_ADD_OPCODE)
+        {
+            disasm_AddString(pDisasm->outputASM, " - \t");
+        }
+        else
+        {
+            disasm_AddString(pDisasm->outputASM, ": ");
+        }
     }
 
     disasm_AddOrigin(pDisasm->outputASM, RES_PROGRAM_BASE_ADDRESS);
@@ -69,13 +77,18 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
         {
             if (((pDisasm->hexCode[i] & pDisasm->opcodeList[j].hexMask) ^ pDisasm->opcodeList[j].hexVal) == 0)
             {
-
                 if (flag & DISASM_ADD_ADDR)
                 {
                     sprintf(org, "0x%X", pDisasm->hexAddress[i]);
                     disasm_AddString(pDisasm->outputASM, org);
                     if (flag & DISASM_ADD_OPCODE)
+                    {
                         disasm_AddString(pDisasm->outputASM, " - ");
+                    }
+                    else
+                    {
+                        disasm_AddString(pDisasm->outputASM, ": ");
+                    }
                 }
 
                 if (flag & DISASM_ADD_OPCODE)
@@ -150,7 +163,28 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
 
         // if mnemonic not found
         if (mnemonicAdded == 0)
+        {
+            if (flag & DISASM_ADD_ADDR)
+            {
+                sprintf(org, "0x%X", pDisasm->hexAddress[i]);
+                disasm_AddString(pDisasm->outputASM, org);
+                if (flag & DISASM_ADD_OPCODE)
+                {
+                    disasm_AddString(pDisasm->outputASM, " - ");
+                }
+                else
+                {
+                    disasm_AddString(pDisasm->outputASM, ": ");
+                }
+            }
+
+            if (flag & DISASM_ADD_OPCODE)
+            {
+                sprintf(org, "0x%X: ", pDisasm->hexCode[i]);
+                disasm_AddString(pDisasm->outputASM, org);
+            }
             disasm_AddString(pDisasm->outputASM, "\tUNKNOWN OPCODE\n");
+        }
 
         mnemonicAdded = 0;
     }
