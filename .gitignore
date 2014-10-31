@@ -41,3 +41,4 @@ Icon
 *.layout
 *.o
 *.ch8
+output/code.asm
