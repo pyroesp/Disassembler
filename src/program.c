@@ -21,14 +21,17 @@ uint8_t program_ReadFile(DISASM *pDisasm, char *programPath)
         return 1;
     }
 
+    // Get file length
     fseek(file, 0, SEEK_END);
     pDisasm->programSize = ftell(file);
     rewind(file);
 
+    // Allocate memory for program buffer
     pDisasm->program = (char*)malloc(pDisasm->programSize * sizeof(char) + 1);
     if (pDisasm->program == NULL)
         return 1;
 
+    // Read file into program buffer
     fread(pDisasm->program, sizeof(char), pDisasm->programSize, file);
     pDisasm->program[pDisasm->programSize] = 0;
 
@@ -40,25 +43,39 @@ uint8_t program_ToHex(DISASM *pDisasm)
 {
     uint32_t sizeHexCode;
     uint32_t i, j;
-    sizeHexCode = pDisasm->programSize / RES_OPCODE_SIZE;
+    sizeHexCode = pDisasm->programSize / RES_OPCODE_SIZE; // Get size of code, #bytes/opcodeSize
     pDisasm->hexCodeSize = sizeHexCode;
 
+    // Allocate memory for hex opcodes
     pDisasm->hexCode = (uint32_t*)malloc(sizeHexCode * sizeof(uint32_t));
     if (pDisasm->hexCode == NULL)
         return 1;
 
+    // Allocate memory for opcodes address
     pDisasm->hexAddress = (uint32_t*)malloc(sizeHexCode * sizeof(uint32_t));
     if (pDisasm->hexAddress == NULL)
         return 1;
 
+    // For all opcodes
     for (i = 0; i < sizeHexCode; i++)
     {
+        // Set the address of the opcode, either equals to PROGRAM_BASE_ADDR or previous address + opcodeSize
         pDisasm->hexAddress[i] = ((i == 0) ? (RES_PROGRAM_BASE_ADDRESS) : (pDisasm->hexAddress[i - 1] + RES_OPCODE_SIZE));
-        pDisasm->hexCode[i] = pDisasm->program[i * RES_OPCODE_SIZE] & 0xFF;
-        for (j = 1; j < RES_OPCODE_SIZE; j++)
+
+        if (RES_MSB_FIRST) // MSB of opcode stored first
         {
-            pDisasm->hexCode[i] <<= 8;
-            pDisasm->hexCode[i] |= (pDisasm->program[(i * RES_OPCODE_SIZE) + j] & 0xFF);
+            pDisasm->hexCode[i] = pDisasm->program[i * RES_OPCODE_SIZE] & 0xFF; // Get MSB from program buffer at i*opcodeSize
+            for (j = 1; j < RES_OPCODE_SIZE; j++) // For next bytes in opcode
+            {
+                pDisasm->hexCode[i] <<= 8; // Shift right 8 bits
+                pDisasm->hexCode[i] |= (pDisasm->program[(i * RES_OPCODE_SIZE) + j] & 0xFF); // Add byte to opcode
+            }
+        }
+        else // LSB of opcode stored first
+        {
+            pDisasm->hexCode[i] = pDisasm->program[i * RES_OPCODE_SIZE] & 0xFF; // Get LSB from program buffer at i*opcodeSize
+            for (j = 1; j < RES_OPCODE_SIZE; j++) // For next bytes in opcode
+                pDisasm->hexCode[i] |= ((pDisasm->program[(i * RES_OPCODE_SIZE) + j] & 0xFF) << (8*j)); // Add byte to opcode
         }
     }
 
@@ -69,10 +86,12 @@ uint32_t program_GetOpcodeIndex(uint32_t hexCode, uint32_t opcodeListSize, OPCOD
 {
     uint32_t i;
 
+    // For all elements in the opcode list
     for (i = 0; i < opcodeListSize; i++)
     {
+        // Search for the correct opcode
         if (((hexCode & pOpcodeList[i].hexMask) ^ pOpcodeList[i].hexVal) == 0)
-            return i;
+            return i; // Return index of opcode
     }
 
     return (uint32_t)-1;
@@ -82,31 +101,39 @@ void program_GetList(DISASM *pDisasm, List *pList, uint32_t instrType, const cha
 {
     uint32_t i, idx;
 
+    // For all opcodes in the program
     for (i = 0; i < pDisasm->hexCodeSize; i++)
     {
+        // Get index of opcode in list of opcodes
         idx = program_GetOpcodeIndex(pDisasm->hexCode[i], pDisasm->totalOpcode, pDisasm->opcodeList);
-        if (idx >= 0 && idx < pDisasm->totalOpcode) // if valid index
+        if (idx != (uint32_t)-1) // If valid index
         {
-            if (pDisasm->opcodeList[idx].type == instrType) // if instruction is jump or call type
+            // If instruction is jump or call type
+            if (pDisasm->opcodeList[idx].type == instrType)
             {
-                if (!program_CheckAddressList(pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0], pList)) // if jump address is not known
+                // If call/jump address is not known
+                if (!program_CheckAddressList(pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0], pList))
                 {
-                    // add address to list
+                    // Add address to list
                     pList->total++;
-                    if (pList->total == 1)
+                    if (pList->total == 1) // If first address is to be added
                     {
+                        // Use malloc to allocate memory
                         pList->address = (uint32_t*)malloc(sizeof(uint32_t) * pList->total);
                         pList->name = (char**)malloc(sizeof(char*) * pList->total);
                         pList->name[pList->total - 1] = (char*)malloc(sizeof(char) * PROGRAM_LBL_LEN);
                     }
-                    else
+                    else // If it's not the first address to be added
                     {
+                        // Use realloc to increase name buffer size
                         pList->address = (uint32_t*)realloc(pList->address, sizeof(uint32_t) * pList->total);
                         pList->name = (char**)realloc(pList->name, sizeof(char*) * pList->total);
                         pList->name[pList->total - 1] = (char*)malloc(sizeof(char) * nameLen);
                     }
 
+                    // Add the address to the list
                     pList->address[pList->total - 1] = pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0];
+                    // Add name of the function/label to the list
                     sprintf(pList->name[pList->total - 1], name, pList->total);
                 }
             }
@@ -118,11 +145,13 @@ uint32_t program_CheckAddressList(uint32_t hexAddress, List *pList)
 {
     uint32_t i;
 
+    // For all elements in list
     for (i = 0; i < pList->total; i++)
     {
+        // Check if address exists
         if (pList->address[i] == hexAddress)
-            return i;
+            return i; // Return index of address in the list
     }
 
-    return (uint32_t)-1; // return -1 if not in list
+    return (uint32_t)-1; // Return -1 if not in list
 }

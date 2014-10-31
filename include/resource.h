@@ -13,5 +13,6 @@
 
 #define RES_PROGRAM_BASE_ADDRESS 0x200 // base address of CHIP-8 program
 #define RES_OPCODE_SIZE 2 // 2 bytes opcode
+#define RES_MSB_FIRST 1 // 0 = LSB first, 1 = MSB first
 
 #endif // RESOURCE_H_INCLUDED

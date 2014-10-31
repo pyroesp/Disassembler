@@ -11,31 +11,27 @@
 #ifndef DISASM_H_INCLUDED
 #define DISASM_H_INCLUDED
 
-/* Includes */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include "resource.h"
 
-/* Defines */
-#define DISASM_ARG_HEX 0 // write arg in hex
-#define DISASM_ARG_DEC 1 // write arg in dec
+#define DISASM_ARG_HEX 0 // Write arg in hex
+#define DISASM_ARG_DEC 1 // Write arg in dec
 
 #define DISASM_ADD_ADDR 0x01 // 1 = add, 0 = don't add
 #define DISASM_ADD_OPCODE 0x02 // 1 = add, 0 = don't add
 
-
-/* Structures */
 typedef struct{
-    uint32_t hexVal; // opcode hex value from config
-    uint32_t type; // type of opcode, either jump or call or non-jump
-    uint32_t hexMask; // opcode hex mask from config
-    uint32_t argc; // number of argument in opcode
-    uint32_t *argMask; // argument mask
+    uint32_t hexVal; // Opcode hex value from config
+    uint32_t type; // Type of opcode, either jump or call or non-jump
+    uint32_t hexMask; // Opcode hex mask from config
+    uint32_t argc; // Number of argument in opcode
+    uint32_t *argMask; // Argument mask
 
-    char *hexConfig; // hex opcode string from config file
-    char *mnemonic; // string of asm instruction
+    char *hexConfig; // Hex opcode string from config file
+    char *mnemonic; // String of asm instruction
 }OPCODE;
 
 typedef struct{
@@ -48,32 +44,38 @@ typedef List CALL; // CALL = List struct
 typedef List JMP; // JMP = List struct
 
 typedef struct{
-    uint32_t totalOpcode; // total hexCode in config file
-    OPCODE *opcodeList; // opcode list
+    uint32_t totalOpcode; // Total hexCode in config file
+    OPCODE *opcodeList; // Opcode list
 
-    char *config; // config file
-    uint32_t configSize;
-    char *program; // program to disassemble
-    uint32_t programSize; // program size in bytes
-    uint32_t *hexCode; // rearange program to have hexCode
-    uint32_t *hexAddress; // address of hexCode
+    char *config; // Config (CSV) buffer
+    uint32_t configSize; // Size og config (CSV)
+    char *program; // Program to disassemble
+    uint32_t programSize; // Program size in bytes
+    uint32_t *hexCode; // Rearange program to have hexCode
+    uint32_t *hexAddress; // Address of hexCode
     uint32_t hexCodeSize;
 
-    JMP jumpList; // list of jumps
-    CALL callList; // list of calls
+    JMP jumpList; // List of jumps
+    CALL callList; // List of calls
 
-    char **outputASM; // output string to save in file
+    char **outputASM; // Output string to save in file
 }DISASM;
 
-/* Functions */
+// Init DISASM structure
 void disasm_Init(DISASM *pDisasm);
+// Generate output code
 void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag);
+// Get argument in opcode
 uint32_t disasm_GetArg(uint32_t hexCode, uint32_t argMask);
+// Convert argument to string
 void disasm_ArgToString(char *argStr, uint32_t argVal, uint32_t argBase);
+// Add ORG 0xAZERTY to output code
 void disasm_AddOrigin(char **pOutput, uint32_t hexAddr);
+// Add string to output code
 void disasm_AddString(char **pOutput, char *string2Add);
+// Replace char in string with another string
 void disasm_StringReplace(char *inputString, char character, char *replaceString);
+// Free DISASM structure
 void disasm_Free(DISASM *pDisasm);
-
 
 #endif // DISASM_H_INCLUDED
