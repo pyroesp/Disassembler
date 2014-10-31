@@ -8,8 +8,8 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-// config/CHIP-8.csv program/SpaceInvaders.ch8
-// config/CHIP-8.csv program/Maze.ch8
+// config/CHIP-8.tsv program/SpaceInvaders.ch8
+// config/CHIP-8.tsv program/Maze.ch8
 
 #include "disasm.h"
 #include "config.h"
