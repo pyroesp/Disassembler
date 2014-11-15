@@ -276,9 +276,11 @@ void disasm_Free(DISASM *pDisasm)
 
     for (i = 0; i < pDisasm->totalOpcode; i++)
     {
-        free(pDisasm->opcodeList[i].argMask);
         free(pDisasm->opcodeList[i].mnemonic);
         free(pDisasm->opcodeList[i].hexConfig);
+        if( pDisasm->opcodeList[i].argc)
+            free(pDisasm->opcodeList[i].argMask);
+
     }
     free(pDisasm->opcodeList);
 
