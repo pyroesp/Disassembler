@@ -13,25 +13,25 @@
 
 #include "disasm.h"
 
-#define CONFIG_CSV_CHAR '\t' // Separator char
+#define CONFIG_TSV_CHAR '\t' // Separator char
 #define CONFIG_VAR_CHAR '$' // Variable char
 
-#define CONFIG_CSVPOS_INSTR 0 // Instruction position in CSV
-#define CONFIG_CSVPOS_INSTR_MASK 1 // Instruction mask position in CSV
-#define CONFIG_CSVPOS_INSTR_TYPE 2 // Instruction type position in CSV
-#define CONFIG_CSVPOS_INSTR_MNEMONIC 3 // Instruction mnemonic position in CSV
-#define CONFIG_CSVPOS_NUM_ARG 4 // Number of arguments position in CSV
-#define CONFIG_CSVPOS_ARG_MASK 5 // Argument mask position in CSV
+#define CONFIG_TSVPOS_INSTR 0 // Instruction position in TSV
+#define CONFIG_TSVPOS_INSTR_MASK 1 // Instruction mask position in TSV
+#define CONFIG_TSVPOS_INSTR_TYPE 2 // Instruction type position in TSV
+#define CONFIG_TSVPOS_INSTR_MNEMONIC 3 // Instruction mnemonic position in TSV
+#define CONFIG_TSVPOS_NUM_ARG 4 // Number of arguments position in TSV
+#define CONFIG_TSVPOS_ARG_MASK 5 // Argument mask position in TSV
 
-// Read CSV file to buffer
+// Read TSV file to buffer
 uint8_t config_ReadFile(DISASM *pDisasm, char *configPath);
-// Get opcode list from csv in buffer
+// Get opcode list from TSV in buffer
 void config_ParseOpcodeList(DISASM *pDisasm);
 // Get opcode list size
 void config_OpcodeListSize(DISASM *pDisasm);
-// Extract data from CSV
+// Extract data from TSV
 char* config_GetValue(DISASM *pDisasm, uint32_t *pIdx);
-// Get length of csv element at index pIdx
+// Get length of TSV element at index pIdx
 uint32_t config_GetLength(DISASM *pDisasm, uint32_t *pIdx);
 // Convert string opcode to hex
 uint32_t config_OpcodeStr2Hex(char *pHexConfig);

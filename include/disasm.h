@@ -15,7 +15,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include "resource.h"
+
+#define DISASM_LITTLE_ENDIAN 0
+#define DISASM_BIG_ENDIAN 1
 
 #define DISASM_ARG_HEX 0 // Write arg in hex
 #define DISASM_ARG_DEC 1 // Write arg in dec
@@ -44,6 +46,10 @@ typedef List CALL; // CALL = List struct
 typedef List JMP; // JMP = List struct
 
 typedef struct{
+    uint32_t programBase; // Base address of program in memory
+    uint32_t opcodeSize; // Opcode size in bytes
+    uint32_t endianness; // big endian, little endian
+
     uint32_t totalOpcode; // Total hexCode in config file
     OPCODE *opcodeList; // Opcode list
 

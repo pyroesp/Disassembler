@@ -8,38 +8,13 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-#include "disasm.h"
 #include "config.h"
 #include "program.h"
+#include "disasm.h"
 
 void disasm_Init(DISASM *pDisasm)
 {
-    // Opcode list
-    pDisasm->totalOpcode = 0;
-    pDisasm->opcodeList = NULL;
-
-    // Program to disassemble
-    pDisasm->program = NULL;
-    pDisasm->hexAddress = NULL;
-    pDisasm->hexCode = NULL;
-    pDisasm->programSize = 0;
-
-    // Config file
-    pDisasm->config = NULL;
-    pDisasm->configSize = 0;
-
-    // Jump structure
-    pDisasm->jumpList.total = 0;
-    pDisasm->jumpList.address = NULL;
-    pDisasm->jumpList.name = NULL;
-
-    // Call structure
-    pDisasm->callList.total = 0;
-    pDisasm->callList.address = NULL;
-    pDisasm->callList.name = NULL;
-
-    // Output code
-    pDisasm->outputASM = NULL;
+    memset(pDisasm, 0, sizeof(DISASM));
 }
 
 void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
@@ -55,7 +30,7 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
     pDisasm->outputASM[0] = (char*)malloc(sizeof(char));
     pDisasm->outputASM[0][0] = 0;
 
-    disasm_AddOrigin(pDisasm->outputASM, RES_PROGRAM_BASE_ADDRESS); // Write origin to output code
+    disasm_AddOrigin(pDisasm->outputASM, pDisasm->programBase); // Write origin to output code
 
     // For all opcodes in program
     for (i = 0; i < pDisasm->hexCodeSize; i++)

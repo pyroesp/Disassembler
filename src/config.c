@@ -44,72 +44,72 @@ void config_ParseOpcodeList(DISASM *pDisasm)
     uint32_t i;
     uint32_t instr = 0;
     uint32_t arg;
-    uint32_t csvPos = CONFIG_CSVPOS_INSTR; // set CSV position to instruction
+    uint32_t TSVPos = CONFIG_TSVPOS_INSTR; // set TSV position to instruction
     char *buff = NULL;
 
-    // Get number of opcodes in CSV
+    // Get number of opcodes in TSV
     config_OpcodeListSize(pDisasm);
     // Allocate memory for opcodeList
     pDisasm->opcodeList = (OPCODE*)malloc(pDisasm->totalOpcode * sizeof(OPCODE));
 
     for (i = 0; i < pDisasm->configSize;)
     {
-        // Get string at index i from CSV, increase i accordingly
+        // Get string at index i from TSV, increase i accordingly
         buff = config_GetValue(pDisasm, &i);
 
-        switch(csvPos)
+        switch(TSVPos)
         {
             // 1. Read instruction
-            case CONFIG_CSVPOS_INSTR:
+            case CONFIG_TSVPOS_INSTR:
                 pDisasm->opcodeList[instr].hexConfig = buff; // Copy pointer to buffer containing the string opcode
                 pDisasm->opcodeList[instr].hexVal = config_OpcodeStr2Hex(buff); // Convert string opcode to hex value
-                csvPos = CONFIG_CSVPOS_INSTR_MASK; // Set next step to read instruction mask
+                TSVPos = CONFIG_TSVPOS_INSTR_MASK; // Set next step to read instruction mask
                 break;
             // 2. Read instruction mask
-            case CONFIG_CSVPOS_INSTR_MASK:
+            case CONFIG_TSVPOS_INSTR_MASK:
                 sscanf(buff, "0x%X", &pDisasm->opcodeList[instr].hexMask); // Convert instruction mask string to hex with sscanf
-                csvPos = CONFIG_CSVPOS_INSTR_TYPE; // Set next step to read instruction type
+                TSVPos = CONFIG_TSVPOS_INSTR_TYPE; // Set next step to read instruction type
                 break;
             // 3. Read instruction type
-            case CONFIG_CSVPOS_INSTR_TYPE:
+            case CONFIG_TSVPOS_INSTR_TYPE:
                 sscanf(buff, "%d", &pDisasm->opcodeList[instr].type); // Convert instruction type string to integer
-                csvPos = CONFIG_CSVPOS_INSTR_MNEMONIC; // Set next step to read instruction mnemonic
+                TSVPos = CONFIG_TSVPOS_INSTR_MNEMONIC; // Set next step to read instruction mnemonic
                 break;
             // 4. Read mnemonic
-            case CONFIG_CSVPOS_INSTR_MNEMONIC:
+            case CONFIG_TSVPOS_INSTR_MNEMONIC:
                 pDisasm->opcodeList[instr].mnemonic = buff; // Copy pointer to instruction mnemonic
-                csvPos = CONFIG_CSVPOS_NUM_ARG; // Set next step to read instruction arguments
+                TSVPos = CONFIG_TSVPOS_NUM_ARG; // Set next step to read instruction arguments
                 break;
             // 5. Read total arguments of instruction
-            case CONFIG_CSVPOS_NUM_ARG:
+            case CONFIG_TSVPOS_NUM_ARG:
                 sscanf(buff, "%d", &pDisasm->opcodeList[instr].argc); // Convert instruction argument to integer
                 if (pDisasm->opcodeList[instr].argc) // if non null
                 {
                     // Allocate memory for the argument masks
                     pDisasm->opcodeList[instr].argMask = (uint32_t*)malloc(pDisasm->opcodeList[instr].argc * sizeof(uint32_t));
-                    csvPos = CONFIG_CSVPOS_ARG_MASK; // Set next step to read argument mask
+                    TSVPos = CONFIG_TSVPOS_ARG_MASK; // Set next step to read argument mask
                     arg = 0; // Set the arg variable (counter) to 0
                 }
                 else // If no arguments
                 {
-                    csvPos = CONFIG_CSVPOS_INSTR; // Go back to read instruction
+                    TSVPos = CONFIG_TSVPOS_INSTR; // Go back to read instruction
                     instr++; // Increase instruction counter
                 }
                 break;
             // 6. Read arguments mask, if there are arguments
-            case CONFIG_CSVPOS_ARG_MASK:
+            case CONFIG_TSVPOS_ARG_MASK:
                 sscanf(buff, "0x%X", &pDisasm->opcodeList[instr].argMask[arg]); // Convert argument mask string to hex
                 arg++; // Increase argument counter
                 if (arg >= pDisasm->opcodeList[instr].argc) // If all argument masks have been read
                 {
                     instr++; // Increase instruction counter
-                    csvPos = CONFIG_CSVPOS_INSTR; // Go back to read instruction
+                    TSVPos = CONFIG_TSVPOS_INSTR; // Go back to read instruction
                 }
                 break;
         }
 
         // Increase variable i to skip certain chars
-        if (pDisasm->config[i] == CONFIG_CSV_CHAR)
+        if (pDisasm->config[i] == CONFIG_TSV_CHAR)
             i++;
         else if (pDisasm->config[i] == '\n')
             i++;
@@ -123,7 +123,7 @@ void config_OpcodeListSize(DISASM *pDisasm)
     uint32_t i;
     uint32_t isOpcode = 0;
 
-    // Check for all contents in csv file
+    // Check for all contents in TSV file
     for (i = 0; i < pDisasm->configSize; i++)
     {
         // check if line starts with 0x
@@ -138,7 +138,7 @@ void config_OpcodeListSize(DISASM *pDisasm)
         }
     }
 
-    pDisasm->totalOpcode++; // Increase total opcode counter
+    pDisasm->totalOpcode++; // Increase total opcode counter one last time to use it in malloc
 }
 
 char* config_GetValue(DISASM *pDisasm, uint32_t *pIdx)
@@ -146,7 +146,7 @@ char* config_GetValue(DISASM *pDisasm, uint32_t *pIdx)
     uint32_t length;
     char *buff;
 
-    // Get length of csv element at index pIdx
+    // Get length of TSV element at index pIdx
     length = config_GetLength(pDisasm, pIdx);
     // Allocate memory for buffer
     buff = (char*)malloc(sizeof(char) * (length + 1));
@@ -162,7 +162,7 @@ uint32_t config_GetLength(DISASM *pDisasm, uint32_t *pIdx)
 {
     uint32_t i;
 
-    for(i = 0;  pDisasm->config[*pIdx + i] != CONFIG_CSV_CHAR &&    \
+    for(i = 0;  pDisasm->config[*pIdx + i] != CONFIG_TSV_CHAR &&    \
                 pDisasm->config[*pIdx + i] != '\n' &&               \
                 pDisasm->config[*pIdx + i] != '\r' &&               \
                 pDisasm->config[*pIdx + i] != 0                     \

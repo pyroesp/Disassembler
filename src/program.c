@@ -43,7 +43,7 @@ uint8_t program_ToHex(DISASM *pDisasm)
 {
     uint32_t sizeHexCode;
     uint32_t i, j;
-    sizeHexCode = pDisasm->programSize / RES_OPCODE_SIZE; // Get size of code, #bytes/opcodeSize
+    sizeHexCode = pDisasm->programSize / pDisasm->opcodeSize; // Get size of code, #bytes/opcodeSize
     pDisasm->hexCodeSize = sizeHexCode;
 
     // Allocate memory for hex opcodes
@@ -59,23 +59,27 @@ uint8_t program_ToHex(DISASM *pDisasm)
     // For all opcodes
     for (i = 0; i < sizeHexCode; i++)
     {
-        // Set the address of the opcode, either equals to PROGRAM_BASE_ADDR or previous address + opcodeSize
-        pDisasm->hexAddress[i] = ((i == 0) ? (RES_PROGRAM_BASE_ADDRESS) : (pDisasm->hexAddress[i - 1] + RES_OPCODE_SIZE));
+        // Set the address of the opcode, either equals to base address or previous address + opcodeSize
+        pDisasm->hexAddress[i] = ((i == 0) ? (pDisasm->programBase) : (pDisasm->hexAddress[i - 1] + pDisasm->opcodeSize));
 
-        if (RES_MSB_FIRST) // MSB of opcode stored first
+        switch (pDisasm->endianness)
         {
-            pDisasm->hexCode[i] = pDisasm->program[i * RES_OPCODE_SIZE] & 0xFF; // Get MSB from program buffer at i*opcodeSize
-            for (j = 1; j < RES_OPCODE_SIZE; j++) // For next bytes in opcode
-            {
-                pDisasm->hexCode[i] <<= 8; // Shift right 8 bits
-                pDisasm->hexCode[i] |= (pDisasm->program[(i * RES_OPCODE_SIZE) + j] & 0xFF); // Add byte to opcode
-            }
-        }
-        else // LSB of opcode stored first
-        {
-            pDisasm->hexCode[i] = pDisasm->program[i * RES_OPCODE_SIZE] & 0xFF; // Get LSB from program buffer at i*opcodeSize
-            for (j = 1; j < RES_OPCODE_SIZE; j++) // For next bytes in opcode
-                pDisasm->hexCode[i] |= ((pDisasm->program[(i * RES_OPCODE_SIZE) + j] & 0xFF) << (8*j)); // Add byte to opcode
+            // MSB of opcode stored first
+            case DISASM_BIG_ENDIAN:
+                pDisasm->hexCode[i] = pDisasm->program[i * pDisasm->opcodeSize] & 0xFF; // Get MSB from program buffer at i*opcodeSize
+                for (j = 1; j < pDisasm->opcodeSize; j++) // For next bytes in opcode
+                {
+                    pDisasm->hexCode[i] <<= 8; // Shift right 8 bits
+                    pDisasm->hexCode[i] |= (pDisasm->program[(i * pDisasm->opcodeSize) + j] & 0xFF); // Add byte to opcode
+                }
+                break;
+            // LSB of opcode stored first
+            case DISASM_LITTLE_ENDIAN:
+            default:
+                pDisasm->hexCode[i] = pDisasm->program[i * pDisasm->opcodeSize] & 0xFF; // Get LSB from program buffer at i*opcodeSize
+                for (j = 1; j < pDisasm->opcodeSize; j++) // For next bytes in opcode
+                    pDisasm->hexCode[i] |= ((pDisasm->program[(i * pDisasm->opcodeSize) + j] & 0xFF) << (8*j)); // Add byte to opcode
+                break;
         }
     }
 
