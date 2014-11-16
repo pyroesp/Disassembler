@@ -8,9 +8,6 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-// config/CHIP-8.tsv program/SpaceInvaders.ch8
-// config/CHIP-8.tsv program/Maze.ch8
-
 #include "disasm.h"
 #include "config.h"
 #include "program.h"
@@ -46,7 +43,7 @@ int main(int argc, char *argv[])
         fclose(fp);
     }
 
-    printf("%s", code.outputASM[0]);
+    // printf("%s", code.outputASM[0]);
 
     disasm_Free(&code);
     return 0;

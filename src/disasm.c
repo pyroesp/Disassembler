@@ -117,9 +117,8 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
                         break;
                     // If instruction is a jump rel type
                     case PROGRAM_INSTR_TYPE_JUMP_REL:
-                        // TODO
-                        break;
-                    // If instruction is a none of the above, NON BRANCH type
+                    // If instruction is none of the above, NON BRANCH type
+                    case PROGRAM_INSTR_TYPE_NONBRANCH:
                     default:
                         // For all arguments in opcode
                         for(k = 0; k < pDisasm->opcodeList[j].argc; k++)
