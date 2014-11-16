@@ -14,11 +14,15 @@
 #include "disasm.h"
 #include "config.h"
 #include "program.h"
+#include "argument.h"
 
 int main(int argc, char *argv[])
 {
     DISASM code;
     disasm_Init(&code);
+
+    if (argument_ParseCmd(&code, argc, argv))
+        return 1;
     if (config_ReadFile(&code, argv[1]))
         return 1;
     if (program_ReadFile(&code, argv[2]))
@@ -42,7 +46,7 @@ int main(int argc, char *argv[])
         fclose(fp);
     }
 
-    //printf("%s", code.outputASM[0]);
+    printf("%s", code.outputASM[0]);
 
     disasm_Free(&code);
     return 0;
