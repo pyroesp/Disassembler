@@ -19,7 +19,8 @@ instruction hex code - instruction hex mask code - instruction type - instructio
 
 Example from CHIP-8.TSV:  0x1NNN	0xF000	1	JP $	1	0x0FFF
 
-There are 4 instruction types: non-branch (0), jump absolute (1), jump relative (2), call (3)
+There are 4 instruction types: non-branch (0), jump absolute (1), jump relative (2), call (3).
+The $ sign is a place holder for the instruction argument(s). I'm thinking of maybe changing it to another char.
 Note: If the CPU has a return instruction, you have to give it an instruction type of 0 even though it's a jumping type instruction.
 The instruction type is used to make a list of call functions and goto labels
 
