@@ -9,15 +9,31 @@ This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAl
 -------
 
 The idea behind Disassembler is to make a universal disassembler, for whatever program you want to disassemble.
+The program will work using a config.TSV file. This file contains all the instruction set of the CPU for which the program has been compiled.
+My disassembler expects at least 2 inputs: The config.TSV filepath and the program.bin filepath.
 
-The program will work using a config file. It will contain all instruction set of the CPU for which the program has been compiled. It will contain an instruction mask, arg counter, arg mask, and finaly the instruction in ASM (or whatever), where $ is used as a placeholder for the arg in the opcode.
+The program can be whatever extension you want it to be, but the disassembler expects a binary type file (a succession of bytes, not encoded, no CRC).
 
-The resource.h file contains some info about the cpu, like the size of opcode and the base address of program code in the ROM.
+The TSV format is as follows:
+instruction hex code - instruction hex mask code - instruction type - instruction mnemonic - number of arguments - argument mask 1 (optional) - argument mask 2 (optional)
 
-In the future I'll add an intel hex format parser, which will "decode" the file by checking the extension of the program to be disassembled.
+Example from CHIP-8.TSV:  0x1NNN	0xF000	1	JP $	1	0x0FFF
+
+There are 4 instruction types: non-branch (0), jump absolute (1), jump relative (2), call (3)
+Note: If the CPU has a return instruction, you have to give it an instruction type of 0 even though it's a jumping type instruction.
+The instruction type is used to make a list of call functions and goto labels
+
+The disassembler has 4 optional commands as of now: 
+
+-b or -B for the base address of the program, either decimal or hexadecimal.
+-e or -E for the endianness of the binary file, either b(ig) or l(ittle).
+-h or -H to display all the commands (this).
+-o or -O for the size of an opcode in bytes, only in decimal
+
+If none is used parameters will keep their default values: BIG ENDIAN mode, base address at 0x0000 and an opcode size of 1 byte.
 
 --------
 
 How to use:
 
-In cmd type - Disassembler.exe instruction_set.csv program.hex
+In cmd type - Disassembler.exe instruction_set.tsv program.bin [-b=0x200] [-e=BIG] [-h] [-o=2]
