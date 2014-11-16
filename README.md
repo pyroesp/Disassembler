@@ -12,7 +12,7 @@ The idea behind Disassembler is to make a universal disassembler, for whatever p
 The program will work using a config.TSV file. This file contains all the instruction set of the CPU for which the program has been compiled.
 My disassembler expects at least 2 inputs: The config.TSV filepath and the program.bin filepath.
 
-The program can be whatever extension you want it to be, but the disassembler expects a binary type file (a succession of bytes, not encoded, no CRC).
+The program file can be whatever extension you want it to be, but the disassembler expects a binary type file (a succession of bytes, not encoded, no CRC).
 
 The TSV format is as follows:
 instruction hex code - instruction hex mask code - instruction type - instruction mnemonic - number of arguments - argument mask 1 (optional) - argument mask 2 (optional)
