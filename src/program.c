@@ -59,8 +59,8 @@ uint8_t program_ToHex(DISASM *pDisasm)
     // For all opcodes
     for (i = 0; i < sizeHexCode; i++)
     {
-        // Set the address of the opcode, either equals to base address or previous address + opcodeSize
-        pDisasm->hexAddress[i] = ((i == 0) ? (pDisasm->arg.programBase) : (pDisasm->hexAddress[i - 1] + pDisasm->arg.opcodeSize));
+        // Set the address of the opcode, either equals to base address or previous address + 1
+        pDisasm->hexAddress[i] = ((i == 0) ? (pDisasm->arg.programBase) : (pDisasm->hexAddress[i - 1] + 1));
 
         switch (pDisasm->arg.endianness)
         {
