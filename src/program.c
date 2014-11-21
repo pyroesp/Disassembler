@@ -116,7 +116,7 @@ void program_GetList(DISASM *pDisasm, List *pList, uint32_t instrType, const cha
             if (pDisasm->opcodeList[idx].type == instrType)
             {
                 // If call/jump address is not known
-                if (!program_CheckAddressList(pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0], pList))
+                if (program_CheckAddressList(pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0], pList) == (uint32_t)-1)
                 {
                     // Add address to list
                     pList->total++;
@@ -153,7 +153,7 @@ uint32_t program_CheckAddressList(uint32_t hexAddress, List *pList)
     for (i = 0; i < pList->total; i++)
     {
         // Check if address exists
-        if (pList->address[i] == hexAddress)
+        if (hexAddress == pList->address[i])
             return i; // Return index of address in the list
     }
 

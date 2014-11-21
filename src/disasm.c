@@ -41,6 +41,25 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
             // Search opcode in list
             if (((pDisasm->hexCode[i] & pDisasm->opcodeList[j].hexMask) ^ pDisasm->opcodeList[j].hexVal) == 0)
             {
+                // Check for function address & add name to output code
+                idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->callList);
+                if (idx != (uint32_t)-1)
+                {
+                    sprintf(name, "\n%s:\n", pDisasm->callList.name[idx]);
+                    disasm_AddString(pDisasm->outputASM, name);
+                }
+
+                // Check for label address & add name to output code
+                idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->jumpList);
+                if (idx != (uint32_t)-1)
+                {
+                    // Add origin for good measure before label
+                    disasm_AddString(pDisasm->outputASM, "\n");
+                    disasm_AddOrigin(pDisasm->outputASM, pDisasm->hexAddress[i]);
+                    sprintf(name, "%s:\n", pDisasm->jumpList.name[idx]);
+                    disasm_AddString(pDisasm->outputASM, name);
+                }
+
                 // Check for add address flag
                 if (flag & DISASM_ADD_ADDR)
                 {
@@ -60,25 +79,6 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
                     sprintf(org, "0x%X: ", pDisasm->hexCode[i]);
                     disasm_AddString(pDisasm->outputASM, org);
                 }
-
-                // Check for function address & add name to output code
-                idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->callList);
-                if (idx != (uint32_t)-1)
-                {
-                    sprintf(name, "%s:\n", pDisasm->callList.name[idx]);
-                    disasm_AddString(pDisasm->outputASM, name);
-                }
-
-                // Check for label address & add name to output code
-                idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->jumpList);
-                if (idx != (uint32_t)-1)
-                {
-                    // Add origin for good measure before label
-                    disasm_AddOrigin(pDisasm->outputASM, pDisasm->hexAddress[i]);
-                    sprintf(name, "%s:\n", pDisasm->jumpList.name[idx]);
-                    disasm_AddString(pDisasm->outputASM, name);
-                }
-
                 // Get opcode mnemonic
                 sprintf(mnemonic, "%s", pDisasm->opcodeList[j].mnemonic);
 
@@ -90,30 +90,34 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
                         // Get address of CALL
                         addr = disasm_GetArg(pDisasm->hexCode[i], pDisasm->opcodeList[j].argMask[0]);
                         // Search address in call list
-                        idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->callList);
+                        idx = program_CheckAddressList(addr, &pDisasm->callList);
                         if (idx == (uint32_t)-1) // if address not found in list
                         {
                             disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
-                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
                         }
                         else
+                        {
                             // Replace variable char from mnemonic with function name string
-                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, pDisasm->callList.name[idx]);
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, pDisasm->callList.name[idx]);
+                        }
                         break;
                     // If instruction is a jump abs type
                     case PROGRAM_INSTR_TYPE_JUMP_ABS:
                         // Get address of JUMP ABS
                         addr = disasm_GetArg(pDisasm->hexCode[i], pDisasm->opcodeList[j].argMask[0]);
                         // Search address in jump abs list
-                        idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->jumpList);
+                        idx = program_CheckAddressList(addr, &pDisasm->jumpList);
                         if (idx == (uint32_t)-1)
                         {
                             disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
-                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
                         }
                         else
+                        {
                             // Replace variable char from mnemonic with jump name string
-                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, pDisasm->callList.name[idx]);
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, pDisasm->jumpList.name[idx]);
+                        }
                         break;
                     // If instruction is a jump rel type
                     case PROGRAM_INSTR_TYPE_JUMP_REL:
@@ -125,7 +129,7 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
                         {
                             // Get argument and convert it to string
                             disasm_ArgToString(argStr, disasm_GetArg(pDisasm->hexCode[i], pDisasm->opcodeList[j].argMask[k]), argBase);
-                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
                         }
                         break;
                 }
