@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         fclose(fp);
     }
 
-    printf("%s", code.outputASM[0]);
+    //printf("%s", code.outputASM[0]);
 
     disasm_Free(&code);
     return 0;
