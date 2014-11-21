@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     DISASM code;
     disasm_Init(&code);
 
-    if (argument_ParseCmd(&code, argc, argv))
+    if (argument_ParseCmd(&code.arg, argc, argv))
         return 1;
     if (config_ReadFile(&code, argv[1]))
         return 1;
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         fclose(fp);
     }
 
-    // printf("%s", code.outputASM[0]);
+    printf("%s", code.outputASM[0]);
 
     disasm_Free(&code);
     return 0;

@@ -30,7 +30,7 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
     pDisasm->outputASM[0] = (char*)malloc(sizeof(char));
     pDisasm->outputASM[0][0] = 0;
 
-    disasm_AddOrigin(pDisasm->outputASM, pDisasm->programBase); // Write origin to output code
+    disasm_AddOrigin(pDisasm->outputASM, pDisasm->arg.programBase); // Write origin to output code
 
     // For all opcodes in program
     for (i = 0; i < pDisasm->hexCodeSize; i++)
@@ -94,11 +94,11 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
                         if (idx == (uint32_t)-1) // if address not found in list
                         {
                             disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
-                            disasm_StringReplace(mnemonic, CONFIG_VAR_CHAR, argStr); // Replace variable char from mnemonic with hex string
+                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
                         }
                         else
                             // Replace variable char from mnemonic with function name string
-                            disasm_StringReplace(mnemonic, CONFIG_VAR_CHAR, pDisasm->callList.name[idx]);
+                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, pDisasm->callList.name[idx]);
                         break;
                     // If instruction is a jump abs type
                     case PROGRAM_INSTR_TYPE_JUMP_ABS:
@@ -109,11 +109,11 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
                         if (idx == (uint32_t)-1)
                         {
                             disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
-                            disasm_StringReplace(mnemonic, CONFIG_VAR_CHAR, argStr); // Replace variable char from mnemonic with hex string
+                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
                         }
                         else
                             // Replace variable char from mnemonic with jump name string
-                            disasm_StringReplace(mnemonic, CONFIG_VAR_CHAR, pDisasm->callList.name[idx]);
+                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, pDisasm->callList.name[idx]);
                         break;
                     // If instruction is a jump rel type
                     case PROGRAM_INSTR_TYPE_JUMP_REL:
@@ -125,7 +125,7 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
                         {
                             // Get argument and convert it to string
                             disasm_ArgToString(argStr, disasm_GetArg(pDisasm->hexCode[i], pDisasm->opcodeList[j].argMask[k]), argBase);
-                            disasm_StringReplace(mnemonic, CONFIG_VAR_CHAR, argStr); // Replace variable char from mnemonic with hex string
+                            disasm_StringReplace(mnemonic, pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
                         }
                         break;
                 }

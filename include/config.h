@@ -14,7 +14,6 @@
 #include "disasm.h"
 
 #define CONFIG_TSV_CHAR '\t' // Separator char
-#define CONFIG_VAR_CHAR '$' // Variable char
 
 #define CONFIG_TSVPOS_INSTR 0 // Instruction position in TSV
 #define CONFIG_TSVPOS_INSTR_MASK 1 // Instruction mask position in TSV
