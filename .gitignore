@@ -42,3 +42,4 @@ Icon
 *.o
 *.ch8
 output/code.asm
+program/WS2812.bin
