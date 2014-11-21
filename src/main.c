@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
     program_GetList(&code, &code.jumpList, PROGRAM_INSTR_TYPE_JUMP_ABS, "label_%03d", PROGRAM_LBL_LEN); // jump
     program_GetList(&code, &code.callList, PROGRAM_INSTR_TYPE_CALL, "function_%03d", PROGRAM_FUNC_LEN); // call
 
-    disasm_GenerateOutput(&code, DISASM_ARG_HEX, DISASM_ADD_ADDR | DISASM_ADD_OPCODE);
+    //disasm_GenerateOutput(&code, DISASM_ARG_HEX, DISASM_ADD_ADDR | DISASM_ADD_OPCODE);
+    disasm_GenerateOutput(&code, DISASM_ARG_HEX, 0);
 
     FILE *fp;
     fp = fopen("output/code.asm", "w");
