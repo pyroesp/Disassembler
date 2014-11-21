@@ -9,14 +9,16 @@
 **/
 
 #include "argument.h"
+#include "disasm.h"
 
 const uint32_t defaultVal[ARGUMENT_DEF_SIZE] = {
     0x0000, // default program base address
     1, // default opcode size in bytes
-    DISASM_BIG_ENDIAN // default endiannes
+    DISASM_BIG_ENDIAN, // default endianness
+    (uint32_t)'$'
 };
 
-uint32_t argument_ParseCmd(DISASM *pDisasm, int argc, char **argv)
+uint32_t argument_ParseCmd(CMDLINE *arg, int argc, char **argv)
 {
     uint32_t i;
 
@@ -24,9 +26,10 @@ uint32_t argument_ParseCmd(DISASM *pDisasm, int argc, char **argv)
         return 1;
 
     // Apply default values, extra commands will overwrite these if used
-    pDisasm->programBase = defaultVal[ARGUMENT_DEFPOS_PROGRAM_BASE];
-    pDisasm->opcodeSize = defaultVal[ARGUMENT_DEFPOS_OPCODE_SIZE];
-    pDisasm->endianness = defaultVal[ARGUMENT_DEFPOS_ENDIANNES];
+    arg->programBase = defaultVal[ARGUMENT_DEFPOS_PROGRAM_BASE];
+    arg->opcodeSize = defaultVal[ARGUMENT_DEFPOS_OPCODE_SIZE];
+    arg->endianness = defaultVal[ARGUMENT_DEFPOS_ENDIANNESS];
+    arg->varChar = defaultVal[ARGUMENT_DEFPOS_VARCHAR];
 
     if (argc > 2) // Extra commands in command line, parse those
     {
@@ -40,43 +43,55 @@ uint32_t argument_ParseCmd(DISASM *pDisasm, int argc, char **argv)
                     case 'b':
                     case 'B':
                         if (argv[i][3] == '0' && (argv[i][4] == 'x' || argv[i][4] == 'X'))
-                            sscanf(&argv[i][5], "%X", &pDisasm->programBase);
+                            sscanf(&argv[i][5], "%X", &arg->programBase);
                         else if (argv[i][3] >= '0' && argv[i][3] <= '9')
-                            sscanf(&argv[i][3], "%d", &pDisasm->programBase);
+                            sscanf(&argv[i][3], "%d", &arg->programBase);
                         else
                         {
                             printf("Error base address command.\n");
                             return 1;
                         }
                         break;
-                    // Endiannes of program
+                    // Endianness of program
                     case 'e':
                     case 'E':
                         if (argv[i][3] == 'b' || argv[i][3] == 'B')
-                            pDisasm->endianness = DISASM_BIG_ENDIAN;
+                            arg->endianness = DISASM_BIG_ENDIAN;
                         else if (argv[i][3] == 'l' || argv[i][3] == 'L')
-                            pDisasm->endianness = DISASM_LITTLE_ENDIAN;
+                            arg->endianness = DISASM_LITTLE_ENDIAN;
                         else
                             return 1;
                         break;
                     // Print help
                     case 'h':
                     case 'H':
-                        printf("Known commands:\n%s\n%s\n%s\n%s\n%s",
+                        printf("Known commands:\n%s\n%s\n%s\n%s\n%s\n%s",
                             "\t-b or -B : Base address of program, either hexadecimal or decimal.",
                             "\t-e or -E : Program endianness, either b(ig) or l(ittle).",
                             "\t-h or -H : Prints this help.",
                             "\t-o or -O : Opcode size in bytes, in decimal.",
+                            "\t-v or -V : Define the placeholder char for the instruction variables.",
                             "Exiting program ...");
                         return 1;
                     // Opcode size
                     case 'o':
                     case 'O':
                         if (argv[i][3] >= '0' && argv[i][3] <= '9')
-                            sscanf(&argv[i][3], "%d", &pDisasm->opcodeSize);
+                            sscanf(&argv[i][3], "%d", &arg->opcodeSize);
                         else
                         {
                             printf("Error opcode size command.\n");
+                            return 1;
+                        }
+                        break;
+                    // Var char
+                    case 'v':
+                    case 'V':
+                        if (argv[i][3] != '\0' || argv[i][3] != '\t' || argv[i][3] != '\n' || argv[i][3] != '\r' || argv[i][3] != ' ')
+                            arg->varChar = (uint32_t)argv[i][3];
+                        else
+                        {
+                            printf("Error var char command, no special chars (zero, tab, whitespace, ...).\n");
                             return 1;
                         }
                         break;

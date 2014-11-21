@@ -12,13 +12,20 @@
 #define ARGUMENT_H_INCLUDED
 
 #include <stdint.h>
-#include "disasm.h"
 
-#define ARGUMENT_DEF_SIZE 3
+#define ARGUMENT_DEF_SIZE 4
 #define ARGUMENT_DEFPOS_PROGRAM_BASE 0
 #define ARGUMENT_DEFPOS_OPCODE_SIZE 1
-#define ARGUMENT_DEFPOS_ENDIANNES 2
+#define ARGUMENT_DEFPOS_ENDIANNESS 2
+#define ARGUMENT_DEFPOS_VARCHAR 3
 
-uint32_t argument_ParseCmd(DISASM *pDisasm, int argc, char **argv);
+typedef struct{
+    uint32_t programBase; // Base address of program in memory
+    uint32_t opcodeSize; // Opcode size in bytes
+    uint32_t endianness; // big endian, little endian
+    uint32_t varChar; // Placeholder char for instruction vars
+}CMDLINE;
+
+uint32_t argument_ParseCmd(CMDLINE *arg, int argc, char **argv);
 
 #endif
