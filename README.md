@@ -39,10 +39,20 @@ The disassembler has 4 optional commands as of now:
 
 -o or -O for the size of an opcode in bytes, only in decimal
 
+-v or -V to define the character used as placeholder for the instructions variables
+
 If none is used parameters will keep their default values: BIG ENDIAN mode, base address at 0x0000 and an opcode size of 1 byte.
+
+--------
+
+Important:
+
+For an isntruction like this "CLRF f	00 0001 1fff ffff", where there's a bit set in the same nibble as a variable it is important you make your instruction hex code like this "0x018X" and NOT "0x01XX".
+
+If you use "0x01XX", the program won't know that the MSbit of the second nibble in this isntruction is supposed to be 1, and the disassembler will probably not recognise the opcode in the bin file !
 
 --------
 
 How to use:
 
-In cmd type - Disassembler.exe instruction_set.tsv program.bin [-b=0x200] [-e=BIG] [-h] [-o=2]
+In cmd type - Disassembler.exe instruction_set.tsv program.bin [-b=0x200] [-e=BIG] [-h] [-o=2] [-v=$]
