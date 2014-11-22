@@ -49,7 +49,7 @@ Important:
 
 For an isntruction like this "CLRF f	00 0001 1fff ffff", where there's a bit set in the same nibble as a variable it is important you make your instruction hex code like this "0x018X" and NOT "0x01XX".
 
-If you use "0x01XX", the program won't know that the MSbit of the second nibble in this isntruction is supposed to be 1, and the disassembler will probably not recognise the opcode in the bin file !
+If you use "0x01XX", the program won't know that the MSbit of the second nibble in this isntruction is supposed to be 1, ie. it will think the opcode is 0x0100, and the disassembler will probably not recognise the opcode in the bin file !
 
 --------
 
