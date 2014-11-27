@@ -27,6 +27,7 @@
 #define DISASM_ADD_OPCODE 0x02 // 1 = add, 0 = don't add
 
 typedef struct{
+    uint32_t opcodeSize; // Size of opcode in bytes
     uint32_t hexVal; // Opcode hex value from config
     uint32_t type; // Type of opcode, either jump or call or non-jump
     uint32_t hexMask; // Opcode hex mask from config
@@ -56,9 +57,7 @@ typedef struct{
     uint32_t configSize; // Size og config (CSV)
     char *program; // Program to disassemble
     uint32_t programSize; // Program size in bytes
-    uint32_t *hexCode; // Rearange program to have hexCode
-    uint32_t *hexAddress; // Address of hexCode
-    uint32_t hexCodeSize;
+    uint32_t smallestOpcodeSize; // Size in bytes of smallest opcode
 
     JMP jumpList; // List of jumps
     CALL callList; // List of calls
@@ -69,7 +68,11 @@ typedef struct{
 // Init DISASM structure
 void disasm_Init(DISASM *pDisasm);
 // Generate output code
-void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag);
+void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase);
+// Find instruction in opcodeList
+uint32_t disasm_GetInstruction(DISASM *pDisasm, uint32_t idx);
+// Get Opcode from program buffer
+uint32_t disasm_GetOpcode(DISASM *pDisasm, uint32_t idx, uint32_t opcodeSize);
 // Get argument in opcode
 uint32_t disasm_GetArg(uint32_t hexCode, uint32_t argMask);
 // Convert argument to string

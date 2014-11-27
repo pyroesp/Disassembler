@@ -39,84 +39,23 @@ uint8_t program_ReadFile(DISASM *pDisasm, char *programPath)
     return 0;
 }
 
-uint8_t program_ToHex(DISASM *pDisasm)
-{
-    uint32_t sizeHexCode;
-    uint32_t i, j;
-    sizeHexCode = pDisasm->programSize / pDisasm->arg.opcodeSize; // Get size of code, #bytes/opcodeSize
-    pDisasm->hexCodeSize = sizeHexCode;
-
-    // Allocate memory for hex opcodes
-    pDisasm->hexCode = (uint32_t*)malloc(sizeHexCode * sizeof(uint32_t));
-    if (pDisasm->hexCode == NULL)
-        return 1;
-
-    // Allocate memory for opcodes address
-    pDisasm->hexAddress = (uint32_t*)malloc(sizeHexCode * sizeof(uint32_t));
-    if (pDisasm->hexAddress == NULL)
-        return 1;
-
-    // For all opcodes
-    for (i = 0; i < sizeHexCode; i++)
-    {
-        // Set the address of the opcode, either equals to base address or previous address + 1
-        pDisasm->hexAddress[i] = ((i == 0) ? (pDisasm->arg.programBase) : (pDisasm->hexAddress[i - 1] + 1));
-
-        switch (pDisasm->arg.endianness)
-        {
-            // MSB of opcode stored first
-            case DISASM_BIG_ENDIAN:
-                pDisasm->hexCode[i] = pDisasm->program[i * pDisasm->arg.opcodeSize] & 0xFF; // Get MSB from program buffer at i*opcodeSize
-                for (j = 1; j < pDisasm->arg.opcodeSize; j++) // For next bytes in opcode
-                {
-                    pDisasm->hexCode[i] <<= 8; // Shift right 8 bits
-                    pDisasm->hexCode[i] |= (pDisasm->program[(i * pDisasm->arg.opcodeSize) + j] & 0xFF); // Add byte to opcode
-                }
-                break;
-            // LSB of opcode stored first
-            case DISASM_LITTLE_ENDIAN:
-            default:
-                pDisasm->hexCode[i] = pDisasm->program[i * pDisasm->arg.opcodeSize] & 0xFF; // Get LSB from program buffer at i*opcodeSize
-                for (j = 1; j < pDisasm->arg.opcodeSize; j++) // For next bytes in opcode
-                    pDisasm->hexCode[i] |= ((pDisasm->program[(i * pDisasm->arg.opcodeSize) + j] & 0xFF) << (8*j)); // Add byte to opcode
-                break;
-        }
-    }
-
-    return 0;
-}
-
-uint32_t program_GetOpcodeIndex(uint32_t hexCode, uint32_t opcodeListSize, OPCODE *pOpcodeList)
-{
-    uint32_t i;
-
-    // For all elements in the opcode list
-    for (i = 0; i < opcodeListSize; i++)
-    {
-        // Search for the correct opcode
-        if (((hexCode & pOpcodeList[i].hexMask) ^ pOpcodeList[i].hexVal) == 0)
-            return i; // Return index of opcode
-    }
-
-    return (uint32_t)-1;
-}
-
 void program_GetList(DISASM *pDisasm, List *pList, uint32_t instrType, const char *name, uint32_t nameLen)
 {
-    uint32_t i, idx;
+    uint32_t i, idx, opcode;
 
-    // For all opcodes in the program
-    for (i = 0; i < pDisasm->hexCodeSize; i++)
+    // For all bytes in the program
+    for (i = 0; i < pDisasm->programSize;)
     {
         // Get index of opcode in list of opcodes
-        idx = program_GetOpcodeIndex(pDisasm->hexCode[i], pDisasm->totalOpcode, pDisasm->opcodeList);
+        idx = disasm_GetInstruction(pDisasm, i);
         if (idx != (uint32_t)-1) // If valid index
         {
             // If instruction is jump or call type
             if (pDisasm->opcodeList[idx].type == instrType)
             {
+                opcode = disasm_GetOpcode(pDisasm, i, pDisasm->opcodeList[idx].opcodeSize);
                 // If call/jump address is not known
-                if (program_CheckAddressList(pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0], pList) == (uint32_t)-1)
+                if (program_CheckAddressList(opcode & pDisasm->opcodeList[idx].argMask[0], pList) == (uint32_t)-1)
                 {
                     // Add address to list
                     pList->total++;
@@ -136,12 +75,15 @@ void program_GetList(DISASM *pDisasm, List *pList, uint32_t instrType, const cha
                     }
 
                     // Add the address to the list
-                    pList->address[pList->total - 1] = pDisasm->hexCode[i] & pDisasm->opcodeList[idx].argMask[0];
+                    pList->address[pList->total - 1] = opcode & pDisasm->opcodeList[idx].argMask[0];
                     // Add name of the function/label to the list
                     sprintf(pList->name[pList->total - 1], name, pList->total);
                 }
             }
+            i += pDisasm->opcodeList[idx].opcodeSize;
         }
+        else
+            i++;
     }
 }
 
