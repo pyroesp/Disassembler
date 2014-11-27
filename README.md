@@ -17,9 +17,9 @@ The program file can be whatever extension you want it to be, but the disassembl
 
 The TSV format is as follows:
 
-instruction hex code - instruction hex mask code - instruction type - instruction mnemonic - number of arguments - argument mask 1 (optional) - argument mask 2 (optional)
+opcode size (in bytes) - instruction hex code - instruction hex mask code - instruction type - instruction mnemonic - number of arguments - argument mask 1 (optional) - argument mask 2 (optional)
 
-Example from CHIP-8.TSV:  0x1NNN	0xF000	1	JP $	1	0x0FFF
+Example from CHIP-8.TSV:   2	0x1NNN	0xF000	1	JP $	1	0x0FFF
 
 There are 4 instruction types: non-branch (0), jump absolute (1), jump relative (2), call (3).
 
@@ -29,7 +29,7 @@ Note: If the CPU has a return instruction, you have to give it an instruction ty
 
 The instruction type is used to make a list of call functions and goto labels
 
-The disassembler has 4 optional commands as of now: 
+The disassembler has 5 optional commands as of now: 
 
 -b or -B for the base address of the program, either decimal or hexadecimal.
 
