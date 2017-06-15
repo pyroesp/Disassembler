@@ -8,7 +8,7 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-#include "config.h"
+#include "../include/config.h"
 
 uint8_t config_ReadFile(DISASM *pDisasm, char *configPath)
 {
@@ -44,7 +44,7 @@ void config_ParseOpcodeList(DISASM *pDisasm)
     uint32_t i;
     uint32_t instr = 0;
     uint32_t arg;
-    uint32_t TSVPos = CONFIG_TSVPOS_OPCODESIZE; // set TSV position to instruction
+    uint32_t TSVPos = CONFIG_TSVPOS_INSTR; // set TSV position to instruction
     char *buff = NULL;
 
     // Get number of opcodes in TSV
@@ -59,13 +59,6 @@ void config_ParseOpcodeList(DISASM *pDisasm)
 
         switch(TSVPos)
         {
-            // 0. Read opcode size
-            case CONFIG_TSVPOS_OPCODESIZE:
-                sscanf(buff, "%d", &pDisasm->opcodeList[instr].opcodeSize);
-                if (instr == 0 || pDisasm->smallestOpcodeSize > pDisasm->opcodeList[instr].opcodeSize)
-                    pDisasm->smallestOpcodeSize = pDisasm->opcodeList[instr].opcodeSize;
-                TSVPos = CONFIG_TSVPOS_INSTR;
-                break;
             // 1. Read instruction
             case CONFIG_TSVPOS_INSTR:
                 pDisasm->opcodeList[instr].hexConfig = buff; // Copy pointer to buffer containing the string opcode
@@ -75,6 +68,7 @@ void config_ParseOpcodeList(DISASM *pDisasm)
             // 2. Read instruction mask
             case CONFIG_TSVPOS_INSTR_MASK:
                 sscanf(buff, "0x%X", &pDisasm->opcodeList[instr].hexMask); // Convert instruction mask string to hex with sscanf
+                config_OpcodeByteSize(pDisasm, instr);
                 TSVPos = CONFIG_TSVPOS_INSTR_TYPE; // Set next step to read instruction type
                 break;
             // 3. Read instruction type
@@ -99,7 +93,7 @@ void config_ParseOpcodeList(DISASM *pDisasm)
                 }
                 else // If no arguments
                 {
-                    TSVPos = CONFIG_TSVPOS_OPCODESIZE; // Go back to read instruction
+                    TSVPos = CONFIG_TSVPOS_INSTR; // Go back to read instruction
                     instr++; // Increase instruction counter
                 }
                 break;
@@ -110,7 +104,7 @@ void config_ParseOpcodeList(DISASM *pDisasm)
                 if (arg >= pDisasm->opcodeList[instr].argc) // If all argument masks have been read
                 {
                     instr++; // Increase instruction counter
-                    TSVPos = CONFIG_TSVPOS_OPCODESIZE; // Go back to read instruction
+                    TSVPos = CONFIG_TSVPOS_INSTR; // Go back to read instruction
                 }
                 break;
         }
@@ -118,10 +112,19 @@ void config_ParseOpcodeList(DISASM *pDisasm)
         // Increase variable i to skip certain chars
         if (pDisasm->config[i] == CONFIG_TSV_CHAR)
             i++;
-        else if (pDisasm->config[i] == '\n')
+        if (pDisasm->config[i] == '\n')
             i++;
-        else if (pDisasm->config[i] == '\r' && pDisasm->config[i + 1] == '\n')
-            i += 2;
+        if (pDisasm->config[i] == '\r')
+            i++;
+    }
+}
+
+void config_OpcodeByteSize(DISASM *pDisasm, uint32_t index){
+    uint32_t mask;
+    mask = pDisasm->opcodeList[index].hexMask;
+    pDisasm->opcodeList[index].size = 0;
+    for (; mask > 0; mask >>= 8){
+        pDisasm->opcodeList[index].size++;
     }
 }
 
@@ -130,29 +133,18 @@ void config_OpcodeListSize(DISASM *pDisasm)
     uint32_t i;
     uint32_t isOpcode = 0;
 
-    // Skip first data in TSV
-    for (i = 0; pDisasm->config[i] != '\t'; i++);
-    i++;
-
     // Check for all contents in TSV file
-    for (; i < pDisasm->configSize; i++)
+    for (i = 0; i < pDisasm->configSize; i++)
     {
-        // Check if line starts with 0x
+        // check if line starts with 0x
         if (pDisasm->config[i] == '0' && pDisasm->config[i + 1] == 'x' && isOpcode == 0)
             isOpcode = 1; // Opcode found
 
-        // Wait end of line
+        // wait end of line
         if ((pDisasm->config[i] == '\n' || pDisasm->config[i] == 0) && isOpcode)
         {
             pDisasm->totalOpcode++; // Increase total opcode counter
             isOpcode = 0; // Reset isOpcode counter
-
-            // Skip first data in TSV
-            if (pDisasm->config[i] == '\n')
-            {
-                for (; pDisasm->config[i] != '\t'; i++);
-                i++;
-            }
         }
     }
 

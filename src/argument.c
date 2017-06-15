@@ -8,8 +8,8 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-#include "argument.h"
-#include "disasm.h"
+#include "../include/argument.h"
+#include "../include/disasm.h"
 
 const uint32_t defaultVal[ARGUMENT_DEF_SIZE] = {
     0x0000, // default program base address
@@ -84,9 +84,10 @@ uint32_t argument_ParseCmd(CMDLINE *arg, int argc, char **argv)
                             return 1;
                         }
                         break;
+                        
                     // Var char
-                    case 'v':
-                    case 'V':
+                    case 'c':
+                    case 'C':
                         if (argv[i][3] != '\0' || argv[i][3] != '\t' || argv[i][3] != '\n' || argv[i][3] != '\r' || argv[i][3] != ' ')
                             arg->varChar = (uint32_t)argv[i][3];
                         else

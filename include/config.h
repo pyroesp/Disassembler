@@ -15,20 +15,19 @@
 
 #define CONFIG_TSV_CHAR '\t' // Separator char
 
-
-#define CONFIG_TSVPOS_OPCODESIZE 0 // Size of opcode in bytes
-#define CONFIG_TSVPOS_INSTR 1 // Instruction position in TSV
-#define CONFIG_TSVPOS_INSTR_MASK 2 // Instruction mask position in TSV
-#define CONFIG_TSVPOS_INSTR_TYPE 3 // Instruction type position in TSV
-#define CONFIG_TSVPOS_INSTR_MNEMONIC 4 // Instruction mnemonic position in TSV
-#define CONFIG_TSVPOS_NUM_ARG 5 // Number of arguments position in TSV
-#define CONFIG_TSVPOS_ARG_MASK 6 // Argument mask position in TSV
-
+#define CONFIG_TSVPOS_INSTR 0 // Instruction position in TSV
+#define CONFIG_TSVPOS_INSTR_MASK 1 // Instruction mask position in TSV
+#define CONFIG_TSVPOS_INSTR_TYPE 2 // Instruction type position in TSV
+#define CONFIG_TSVPOS_INSTR_MNEMONIC 3 // Instruction mnemonic position in TSV
+#define CONFIG_TSVPOS_NUM_ARG 4 // Number of arguments position in TSV
+#define CONFIG_TSVPOS_ARG_MASK 5 // Argument mask position in TSV
 
 // Read TSV file to buffer
 uint8_t config_ReadFile(DISASM *pDisasm, char *configPath);
 // Get opcode list from TSV in buffer
 void config_ParseOpcodeList(DISASM *pDisasm);
+// Get opcode byte size
+void config_OpcodeByteSize(DISASM *pDisasm, uint32_t index);
 // Get opcode list size
 void config_OpcodeListSize(DISASM *pDisasm);
 // Extract data from TSV

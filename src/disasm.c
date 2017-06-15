@@ -8,28 +8,23 @@
  *      This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 **/
 
-#include "config.h"
-#include "program.h"
-#include "disasm.h"
+#include "../include/config.h"
+#include "../include/program.h"
+#include "../include/disasm.h"
 
 void disasm_Init(DISASM *pDisasm)
 {
     memset(pDisasm, 0, sizeof(DISASM));
 }
 
-void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase)
+void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase, uint32_t flag)
 {
-    uint32_t i, k;
-    uint32_t idx;
-    uint32_t opcode;
-    uint32_t instr;
-    uint32_t addr;
-    uint32_t PC = pDisasm->arg.programBase;
-
-    char mnemonic[128]; // Mnemonic string
+    uint32_t i, j, k, idx, addr;
+    uint8_t mnemonicAdded = 0;
+    char mnemonic[32]; // Mnemonic string
     char name[32]; // Function or label name string
     char argStr[16]; // Argument value string (either hexadecimal or decimal)
-//    char org[16]; // Origin of code
+    char org[16]; // Origin of code
 
     pDisasm->outputASM = (char**)malloc(sizeof(char*)); // Just to have a valid pointer to start with
     pDisasm->outputASM[0] = (char*)malloc(sizeof(char));
@@ -37,160 +32,226 @@ void disasm_GenerateOutput(DISASM *pDisasm, uint32_t argBase)
 
     disasm_AddOrigin(pDisasm->outputASM, pDisasm->arg.programBase); // Write origin to output code
 
-    for (i = 0; i < pDisasm->programSize;)
+    // For all opcodes in program
+    for (i = 0; i < pDisasm->hexCodeSize; i++)
     {
-        instr = disasm_GetInstruction(pDisasm, i);
-
-        if (instr == (uint32_t)-1)
+        // For all defined opcodes in TSV
+        for (j = 0; j < pDisasm->totalOpcode; j++)
         {
-            // Add "unknown opcode" to output code
-            sprintf(mnemonic, "\t; UNKNOWN OPCODE - 0x%X\n", disasm_GetOpcode(pDisasm, i, pDisasm->smallestOpcodeSize));
-            disasm_AddString(pDisasm->outputASM, mnemonic);
-            i += pDisasm->smallestOpcodeSize;
-        }
-        else
-        {
-            opcode = disasm_GetOpcode(pDisasm, i, pDisasm->opcodeList[instr].opcodeSize);
-
-            // Check for function address & add name to output code
-            idx = program_CheckAddressList(PC, &pDisasm->callList);
-            if (idx != (uint32_t)-1)
+            // Search opcode in list
+            if (((pDisasm->hexCode[i] & pDisasm->opcodeList[j].hexMask) ^ pDisasm->opcodeList[j].hexVal) == 0)
             {
-                sprintf(name, "\n%s:\n", pDisasm->callList.name[idx]);
-                disasm_AddString(pDisasm->outputASM, name);
-            }
+                // Check for function address & add name to output code
+                idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->callList);
+                if (idx != (uint32_t)-1)
+                {
+                    sprintf(name, "\n%s:\n", pDisasm->callList.name[idx]);
+                    disasm_AddString(pDisasm->outputASM, name);
+                }
 
-            // Check for label address & add name to output code
-            idx = program_CheckAddressList(PC, &pDisasm->jumpList);
-            if (idx != (uint32_t)-1)
-            {
-                // Add origin for good measure before label
+                // Check for label address & add name to output code
+                idx = program_CheckAddressList(pDisasm->hexAddress[i], &pDisasm->jumpList);
+                if (idx != (uint32_t)-1)
+                {
+                    // Add origin for good measure before label
+                    disasm_AddString(pDisasm->outputASM, "\n");
+                    disasm_AddOrigin(pDisasm->outputASM, pDisasm->hexAddress[i]);
+                    sprintf(name, "%s:\n", pDisasm->jumpList.name[idx]);
+                    disasm_AddString(pDisasm->outputASM, name);
+                }
+
+                // Check for add address flag
+                if (flag & DISASM_ADD_ADDR)
+                {
+                    // Add address to output code
+                    sprintf(org, "0x%04X", pDisasm->hexAddress[i]);
+                    disasm_AddString(pDisasm->outputASM, org);
+                    if (flag & DISASM_ADD_OPCODE)
+                        disasm_AddString(pDisasm->outputASM, " - ");
+                    else
+                        disasm_AddString(pDisasm->outputASM, ": ");
+                }
+
+                // Check for add opcode flag
+                if (flag & DISASM_ADD_OPCODE)
+                {
+                    // Add opcode to output code
+                    sprintf(org, "0x%04X: ", pDisasm->hexCode[i]);
+                    disasm_AddString(pDisasm->outputASM, org);
+                }
+                // Get opcode mnemonic
+                sprintf(mnemonic, "%s", pDisasm->opcodeList[j].mnemonic);
+
+                // Check opcode type
+                switch (pDisasm->opcodeList[j].type)
+                {
+                    // If instruction is a CALL type
+                    case PROGRAM_INSTR_TYPE_CALL:
+                        // Get address of CALL
+                        addr = disasm_GetArg(pDisasm->hexCode[i], pDisasm->opcodeList[j].argMask[0]);
+                        // Search address in call list
+                        idx = program_CheckAddressList(addr, &pDisasm->callList);
+                        if (idx == (uint32_t)-1) // if address not found in list
+                        {
+                            disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
+                        }
+                        else
+                        {
+                            // Replace variable char from mnemonic with function name string
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, pDisasm->callList.name[idx]);
+                        }
+                        break;
+                    // If instruction is a jump abs type
+                    case PROGRAM_INSTR_TYPE_JUMP_ABS:
+                        // Get address of JUMP ABS
+                        addr = disasm_GetArg(pDisasm->hexCode[i], pDisasm->opcodeList[j].argMask[0]);
+                        // Search address in jump abs list
+                        idx = program_CheckAddressList(addr, &pDisasm->jumpList);
+                        if (idx == (uint32_t)-1)
+                        {
+                            disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
+                        }
+                        else
+                        {
+                            // Replace variable char from mnemonic with jump name string
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, pDisasm->jumpList.name[idx]);
+                        }
+                        break;
+                    // If instruction is a jump rel type
+                    case PROGRAM_INSTR_TYPE_JUMP_REL:
+                    // If instruction is none of the above, NON BRANCH type
+                    case PROGRAM_INSTR_TYPE_NONBRANCH:
+                    default:
+                        // For all arguments in opcode
+                        for(k = 0; k < pDisasm->opcodeList[j].argc; k++)
+                        {
+                            // Get argument and convert it to string
+                            disasm_ArgToString(argStr, disasm_GetArg(pDisasm->hexCode[i], pDisasm->opcodeList[j].argMask[k]), argBase);
+                            disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
+                        }
+                        break;
+                }
+
+                // Add tab + mnemonic & args + new line to the generated output ASM code
+                disasm_AddString(pDisasm->outputASM, "\t");
+                disasm_AddString(pDisasm->outputASM, mnemonic);
                 disasm_AddString(pDisasm->outputASM, "\n");
-                disasm_AddOrigin(pDisasm->outputASM, PC);
-                sprintf(name, "%s:\n", pDisasm->jumpList.name[idx]);
-                disasm_AddString(pDisasm->outputASM, name);
+
+                // Mnemonic found
+                mnemonicAdded = 1;
             }
-
-            // Check for add address flag
-//            if (flag & DISASM_ADD_ADDR)
-//            {
-//                // Add address to output code
-//                sprintf(org, "0x%X", pDisasm->hexAddress[i]);
-//                disasm_AddString(pDisasm->outputASM, org);
-//                if (flag & DISASM_ADD_OPCODE)
-//                    disasm_AddString(pDisasm->outputASM, " - ");
-//                else
-//                    disasm_AddString(pDisasm->outputASM, ": ");
-//            }
-
-            // Check for add opcode flag
-//            if (flag & DISASM_ADD_OPCODE)
-//            {
-//                // Add opcode to output code
-//                sprintf(org, "0x%X: ", pDisasm->hexCode[i]);
-//                disasm_AddString(pDisasm->outputASM, org);
-//            }
-
-            // Get opcode mnemonic
-            sprintf(mnemonic, "%s", pDisasm->opcodeList[instr].mnemonic);
-
-            // Check opcode type
-            switch (pDisasm->opcodeList[instr].type)
-            {
-                // If instruction is a CALL type
-                case PROGRAM_INSTR_TYPE_CALL:
-                    // Get address of CALL
-                    addr = disasm_GetArg(opcode, pDisasm->opcodeList[instr].argMask[0]);
-                    // Search address in call list
-                    idx = program_CheckAddressList(addr, &pDisasm->callList);
-                    if (idx == (uint32_t)-1) // if address not found in list
-                    {
-                        disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
-                        disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
-                    }
-                    else
-                    {
-                        // Replace variable char from mnemonic with function name string
-                        disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, pDisasm->callList.name[idx]);
-                    }
-                    break;
-                // If instruction is a jump abs type
-                case PROGRAM_INSTR_TYPE_JUMP_ABS:
-                    // Get address of JUMP ABS
-                    addr = disasm_GetArg(opcode, pDisasm->opcodeList[instr].argMask[0]);
-                    // Search address in jump abs list
-                    idx = program_CheckAddressList(addr, &pDisasm->jumpList);
-                    if (idx == (uint32_t)-1)
-                    {
-                        disasm_ArgToString(argStr, addr, argBase); // Convert hex address to string
-                        disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
-                    }
-                    else
-                    {
-                        // Replace variable char from mnemonic with jump name string
-                        disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, pDisasm->jumpList.name[idx]);
-                    }
-                    break;
-                // If instruction is a jump rel type
-                case PROGRAM_INSTR_TYPE_JUMP_REL:
-                // If instruction is none of the above, NON BRANCH type
-                case PROGRAM_INSTR_TYPE_NONBRANCH:
-                default:
-                    // For all arguments in opcode
-                    for(k = 0; k < pDisasm->opcodeList[instr].argc; k++)
-                    {
-                        // Get argument and convert it to string
-                        disasm_ArgToString(argStr, disasm_GetArg(opcode, pDisasm->opcodeList[instr].argMask[k]), argBase);
-                        disasm_StringReplace(mnemonic, (char)pDisasm->arg.varChar, argStr); // Replace variable char from mnemonic with hex string
-                    }
-                    break;
-            }
-
-            // Add tab + mnemonic & args + new line to the generated output ASM code
-            disasm_AddString(pDisasm->outputASM, "\t");
-            disasm_AddString(pDisasm->outputASM, mnemonic);
-            disasm_AddString(pDisasm->outputASM, "\n");
-
-            i += pDisasm->opcodeList[instr].opcodeSize;
         }
-        PC++;
+
+        // If mnemonic not found
+        if (mnemonicAdded == 0)
+        {
+            if (flag & DISASM_ADD_ADDR)
+            {
+                sprintf(org, "0x%X", pDisasm->hexAddress[i]);
+                disasm_AddString(pDisasm->outputASM, org);
+                if (flag & DISASM_ADD_OPCODE)
+                {
+                    disasm_AddString(pDisasm->outputASM, " - ");
+                }
+                else
+                {
+                    disasm_AddString(pDisasm->outputASM, ": ");
+                }
+            }
+
+            if (flag & DISASM_ADD_OPCODE)
+            {
+                sprintf(org, "0x%X: ", pDisasm->hexCode[i]);
+                disasm_AddString(pDisasm->outputASM, org);
+            }
+
+            // Add "unknown opcode" to output code
+            disasm_AddString(pDisasm->outputASM, "\t; UNKNOWN OPCODE\n");
+        }
+
+        // Reset mnemonic added
+        mnemonicAdded = 0;
     }
 }
 
-uint32_t disasm_GetInstruction(DISASM *pDisasm, uint32_t idx)
-{
-    uint32_t i;
+uint32_t disasm_GetOpcode(DISASM *pDisasm, uint32_t *index, uint32_t size){
     uint32_t opcode;
+    uint32_t i;
 
-    for (i = 0; i < pDisasm->totalOpcode; i++)
-    {
-        opcode = disasm_GetOpcode(pDisasm, idx, pDisasm->opcodeList[i].opcodeSize);
-        if (((opcode & pDisasm->opcodeList[i].hexMask) ^ pDisasm->opcodeList[i].hexVal) == 0)
-            return i;
+    if (1 == size){
+        opcode = pDisasm->bin[*index];
+    } else {
+        opcode = 0;
+        for (i = 0; i < size; i++){
+            switch (pDisasm->arg.endianness)
+            {
+                // MSB of opcode stored first
+                case DISASM_BIG_ENDIAN:
+                    opcode <<= 8;
+                    opcode |= (pDisasm->bin[i + *index] & 0xFF);
+                    break;
+                // LSB of opcode stored first
+                case DISASM_LITTLE_ENDIAN:
+                default:
+                    if (0 == i%2){
+                        opcode <<= 16;
+                        opcode |= (pDisasm->bin[i + *index] & 0xFF);
+                    } else {
+                        opcode |= ((pDisasm->bin[i + *index] & 0xFF) << 8);
+                    }
+            } 
+        }
+    }
+
+    return opcode;
+}
+
+uint32_t disasm_SearchOpInList(DISASM *pDisasm, uint32_t opcode, uint32_t size){
+    uint32_t i;
+
+    for (i = 0; i < pDisasm->totalOpcode; i++){
+        // Check opcode size in opcodeList
+        if (size == pDisasm->opcodeList[i].size){
+            // Search opcode in list
+            if (((opcode & pDisasm->opcodeList[i].hexMask) ^ pDisasm->opcodeList[i].hexVal) == 0){
+                return i;
+            }
+        }
     }
 
     return (uint32_t)-1;
 }
 
-uint32_t disasm_GetOpcode(DISASM *pDisasm, uint32_t idx, uint32_t opcodeSize)
-{
-    uint32_t retVal = 0;
+void disasm_FindOpcode(DISASM *pDisasm, uint32_t *index){
     uint32_t i;
+    uint32_t biggestOpSize = 0; // biggest opcode size in opcode list
+    uint32_t smallestOpSize = UINT32_MAX; // smallest opcode size in opcode list
 
-    for (i = 0; i < opcodeSize; i++)
-    {
-        if (pDisasm->arg.endianness == DISASM_BIG_ENDIAN)
-            retVal |= (pDisasm->program[idx + i] & 0xFF); // Add byte to opcode
-        else if (pDisasm->arg.endianness == DISASM_LITTLE_ENDIAN)
-            retVal |= ((pDisasm->program[idx + opcodeSize - 1 - i] & 0xFF)); // Add byte to opcode
+    uint32_t opcode = 0;
+    uint32_t opcodeListIdx = 0;
 
-        if (i < (opcodeSize - 1))
-            retVal <<= 8;
+    for (i = 0; i < pDisasm->totalOpcode; i++){
+        if (biggestOpSize < pDisasm->opcodeList[i].size){
+            biggestOpSize = pDisasm->opcodeList[i].size;
+        }
+        if (smallestOpSize > pDisasm->opcodeList[i].size){
+            smallestOpSize = pDisasm->opcodeList[i].size;
+        }
     }
 
-    return retVal;
-}
+    opcode = disasm_GetOpcode(pDisasm, index, biggestOpSize);
+    opcodeListIdx = disasm_SearchOpInList(pDisasm, opcode, biggestOpSize);
 
+    if ((uint32_t) -1 != opcodeListIdx){
+        // found opcode, translate to mnemonic & stuff
+        printf("%d) 0x%04X - %s\n", *index, opcode, pDisasm->opcodeList[opcodeListIdx].mnemonic);
+        (*index) += biggestOpSize;
+    } else {
+        (*index) += smallestOpSize;
+    }
+}
 
 uint32_t disasm_GetArg(uint32_t hexCode, uint32_t argMask)
 {
@@ -265,17 +326,20 @@ void disasm_Free(DISASM *pDisasm)
     uint32_t i;
 
     free(pDisasm->config);
-    free(pDisasm->program);
+    free(pDisasm->hexAddress);
+    free(pDisasm->bin);
 
     for (i = 0; i < pDisasm->totalOpcode; i++)
     {
         free(pDisasm->opcodeList[i].mnemonic);
         free(pDisasm->opcodeList[i].hexConfig);
-        if( pDisasm->opcodeList[i].argc)
+        if (pDisasm->opcodeList[i].argc){
             free(pDisasm->opcodeList[i].argMask);
+        }
 
     }
     free(pDisasm->opcodeList);
+
 
     free(pDisasm->jumpList.address);
     for (i = 0; i < pDisasm->jumpList.total; i++)
@@ -287,6 +351,5 @@ void disasm_Free(DISASM *pDisasm)
         free(pDisasm->callList.name[i]);
     free(pDisasm->callList.name);
 
-    free(&pDisasm->outputASM[0]);
     free(pDisasm->outputASM);
 }

@@ -23,6 +23,10 @@
 
 // Read program file to buffer
 uint8_t program_ReadFile(DISASM *pDisasm, char *programPath);
+// Convert program file to hex opcodes
+uint8_t program_ToHex(DISASM *pDisasm);
+// Get opcode index
+uint32_t program_GetOpcodeIndex(uint32_t hexCode, uint32_t opcodeListSize, OPCODE *pOpcodeList);
 // Make list of functions and goto labels
 void program_GetList(DISASM *pDisasm, List *pList, uint32_t instrType, const char *name, uint32_t nameLen);
 // Check the address in the list
