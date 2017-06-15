@@ -26,7 +26,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must ends with two \r.
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -41,5 +42,9 @@ Icon
 *.layout
 *.o
 *.ch8
-output/code.asm
-program/WS2812.bin
+*.bin
+*.hex
+*.asm
+*.sublime-project
+*.sublime-workspace
+bin/*
