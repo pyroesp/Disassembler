@@ -8,7 +8,7 @@ This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAl
 
 -------
 
-The idea behind Disassembler is to make a universal disassembler, for whatever program you want to disassemble.
+The first idea behind Disassembler was to make a universal disassembler.
 The program will work using a config.TSV file. This file contains all the instruction set of the CPU for which the program has been compiled.
 
 My disassembler expects at least 2 inputs: The config.TSV filepath and the program.bin filepath.
